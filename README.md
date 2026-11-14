@@ -22,7 +22,7 @@ Developer guidelines and invariants are defined in [`AGENTS.md`](AGENTS.md).
 - **Runtime:** Node.js 24+
 - **Framework:** [NestJS](https://nestjs.com/) (Modular architecture, Guards, Dependency Injection)
 - **Language:** TypeScript 5.7+ (Strict types, zero `any`)
-- **ORM & Database:** [Prisma](https://www.prisma.io/) with SQLite (zero-config local dev) and PostgreSQL (production via Docker)
+- **ORM & Database:** [Prisma](https://www.prisma.io/) with PostgreSQL 16 (via Docker / Podman or local service)
 - **Sub-Second Tooling:** [oxlint](https://oxc.rs/) (fast Rust linter) + [oxfmt](https://oxc.rs/) (double quotes formatting)
 - **Authentication:** Stateless JWT + `bcrypt` password hashing
 - **Documentation:** Interactive OpenAPI / Swagger UI at `/api/docs`
@@ -32,8 +32,8 @@ Developer guidelines and invariants are defined in [`AGENTS.md`](AGENTS.md).
 ## 2-Minute Quickstart
 
 ### Prerequisites
-- **Local Run:** Node.js 24+ (`npm` or `bun`)
-- **Containerized Run (Optional):** Docker or Podman with compose support
+- Node.js 24+ (`npm` or `bun`)
+- Docker or Podman (for running PostgreSQL or the full container stack)
 
 ### Option A: Local Run (Fastest)
 
@@ -41,16 +41,20 @@ Developer guidelines and invariants are defined in [`AGENTS.md`](AGENTS.md).
 # 1. Install dependencies
 bun install   # or: npm install
 
-# 2. Push database schema & generate Prisma Client
+# 2. Configure environment
+cp .env.example .env
+
+# 3. Start PostgreSQL container
+docker compose up -d postgres   # or: podman compose up -d postgres
+
+# 4. Push database schema & seed demo accounts
 npx prisma db push
+bun run seed                    # or: npm run seed
 
-# 3. Seed demo accounts (Padma Retail, Nadia Rahman, Rafi Ahmed)
-bun run seed  # or: npm run seed
+# 5. Run tests
+bun test                        # or: npm test
 
-# 4. Run tests
-bun test      # or: npm test
-
-# 5. Start development server
+# 6. Start development server
 bun run start:dev
 ```
 
