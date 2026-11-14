@@ -255,9 +255,9 @@ describe("RBAC & Branch Scoping Test Suite", () => {
       });
 
       // Attempting to delete Dhanmondi should throw ConflictException instead of crashing
-      await expect(
-        branchesService.delete(orgId, dhanmondiBranchId),
-      ).rejects.toThrow(ConflictException);
+      await expect(branchesService.delete(orgId, dhanmondiBranchId)).rejects.toThrow(
+        ConflictException,
+      );
     });
 
     it("should delete branch successfully when it has no active products", async () => {

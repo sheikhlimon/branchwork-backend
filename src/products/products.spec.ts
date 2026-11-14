@@ -248,9 +248,9 @@ describe("ProductsService Branch Scoping & Inventory Test Suite", () => {
         isOwner: false,
       };
 
-      await expect(
-        productsService.findAll(unassignedStaffUser, {}),
-      ).rejects.toThrow(ForbiddenException);
+      await expect(productsService.findAll(unassignedStaffUser, {})).rejects.toThrow(
+        ForbiddenException,
+      );
     });
   });
 
