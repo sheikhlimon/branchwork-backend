@@ -1,0 +1,93 @@
+// Prisma Schema for Branchwork Backend
+// Multi-tenant retail console with branch-scoped RBAC
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  branches  Branch[]
+  roles     Role[]
+  users     User[]
+  products  Product[]
+
+  @@map("organizations")
+}
+
+model Branch {
+  id             String       @id @default(cuid())
+  organizationId String
+  name           String
+  city           String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  users          User[]
+  products       Product[]
+
+  @@map("branches")
+}
+
+model Role {
+  id             String       @id @default(cuid())
+  organizationId String
+  name           String
+  description    String?
+  // Stored as JSON string (e.g. '["view_products","organize_products","manage_staff"]')
+  permissions    String       @default("[]")
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  users          User[]
+
+  @@map("roles")
+}
+
+model User {
+  id             String       @id @default(cuid())
+  organizationId String
+  branchId       String?
+  roleId         String?
+  name           String
+  email          String       @unique
+  passwordHash   String
+  isOwner        Boolean      @default(false)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  branch         Branch?      @relation(fields: [branchId], references: [id], onDelete: SetNull)
+  role           Role?        @relation(fields: [roleId], references: [id], onDelete: SetNull)
+
+  @@map("users")
+}
+
+model Product {
+  id             String       @id @default(cuid())
+  organizationId String
+  branchId       String
+  name           String
+  sku            String       @unique
+  category       String
+  price          Float
+  stock          Int          @default(0)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  branch         Branch       @relation(fields: [branchId], references: [id], onDelete: Restrict)
+
+  @@map("products")
+}
