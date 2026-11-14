@@ -71,6 +71,10 @@ export class ProductsService {
     const resolvedBranchId = user.isOwner ? query.branchId : user.branchId;
 
     const search = query.search?.trim();
+    const page = query.page && query.page > 0 ? query.page : undefined;
+    const limit = query.limit && query.limit > 0 ? query.limit : undefined;
+    const skip = page && limit ? (page - 1) * limit : undefined;
+    const take = limit;
 
     return this.prisma.product.findMany({
       where: {
@@ -86,6 +90,8 @@ export class ProductsService {
             }
           : {}),
       },
+      ...(skip !== undefined ? { skip } : {}),
+      ...(take !== undefined ? { take } : {}),
       include: {
         branch: {
           select: { id: true, name: true, city: true },

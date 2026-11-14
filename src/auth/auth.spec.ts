@@ -58,6 +58,9 @@ describe("AuthService TDD Suite", () => {
       expect(result.user.name).toBe("Nadia Rahman");
       expect(result.user.isOwner).toBe(true);
       expect(result.user.organizationId).toBeDefined();
+      expect(result.user.permissions).toEqual(["*"]);
+      expect(result.user.roleName).toBe("Owner");
+      expect(result.user.branchId).toBeNull();
     });
 
     it("should reject registration if email is already taken with ConflictException", async () => {

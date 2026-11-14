@@ -78,6 +78,11 @@ export class AuthService {
         isOwner: user.isOwner,
         organizationId: user.organizationId,
         organizationName: org.name,
+        branchId: null,
+        branchName: null,
+        roleId: null,
+        roleName: "Owner",
+        permissions: ["*"],
       },
     };
   }

@@ -196,6 +196,25 @@ describe("ProductsService Branch Scoping & Inventory Test Suite", () => {
       expect(skuResults[0].sku).toBe("TEST-OIL-001");
     });
 
+    it("Owner should be able to paginate products using page and limit", async () => {
+      // 3 products exist in orgId: Mustard oil, Basmati rice, Steel flask (ordered by createdAt desc)
+      const page1 = await productsService.findAll(ownerUser, {
+        page: 1,
+        limit: 2,
+      });
+      expect(page1.length).toBe(2);
+
+      const page2 = await productsService.findAll(ownerUser, {
+        page: 2,
+        limit: 2,
+      });
+      expect(page2.length).toBe(1);
+
+      // Verify no overlap
+      const page1Ids = page1.map((p) => p.id);
+      expect(page1Ids).not.toContain(page2[0].id);
+    });
+
     it("CRITICAL: Staff at Gulshan MUST ONLY receive Gulshan products and NEVER Dhanmondi products", async () => {
       // Even if staff does not pass any query param, backend automatically scopes to Gulshan
       const staffProducts = await productsService.findAll(gulshanStaffUser, {});
