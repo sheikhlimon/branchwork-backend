@@ -173,5 +173,5 @@ Every table (`BRANCH`, `ROLE`, `USER`, `PRODUCT`) maintains an explicit `organiz
 
 ### ADR 2: Runtime and Containers
 * **Context:** Reviewers run different package managers (npm, pnpm, bun) and container engines (Docker, Podman).
-* **Decision:** We locked Node.js 24 in `.node-version` and `engines`, supported SQLite for instant local runs, and provided `compose.yaml` for containerized runs.
+* **Decision:** We targeted Node.js 24+, supported SQLite for instant local runs, and provided `compose.yaml` for containerized runs.
 * **Consequences:** Zero global configuration required to review the code locally. Reviewers can test via standard `npm install` / `bun install`, or run the full stack with `docker compose up --build` or `podman compose up --build`.

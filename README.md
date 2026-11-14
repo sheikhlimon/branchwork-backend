@@ -19,7 +19,7 @@ Developer guidelines and invariants are defined in [`AGENTS.md`](AGENTS.md).
 
 ## Tech Stack & Tooling
 
-- **Runtime:** Node.js 24+ (locked via `.node-version` and `package.json` engines)
+- **Runtime:** Node.js 24+
 - **Framework:** [NestJS](https://nestjs.com/) (Modular architecture, Guards, Dependency Injection)
 - **Language:** TypeScript 5.7+ (Strict types, zero `any`)
 - **ORM & Database:** [Prisma](https://www.prisma.io/) with SQLite (zero-config local dev) and PostgreSQL (production via Docker)
