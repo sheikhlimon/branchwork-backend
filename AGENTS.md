@@ -7,7 +7,7 @@ Operational guidelines and architectural invariants for Branchwork Backend.
 - **Runtime & Framework:** Node.js 24+ / TypeScript / NestJS.
 - **Package Manager & Test Runner:** `bun` (fast execution, test runner, script orchestration).
 - **Sub-Second Tooling:** `oxlint` (linter) + `oxfmt` (formatter with double quotes).
-- **Database & ORM:** SQLite (dev/test) / PostgreSQL (prod via Docker) via Prisma ORM.
+- **Database & ORM:** PostgreSQL 16 (via Docker / Podman or local service) via Prisma ORM.
 - **Auth & Security:** JWT (Access Tokens) + bcrypt password hashing + NestJS Guards.
 - **Documentation:** Interactive OpenAPI / Swagger UI at `/api/docs`.
 

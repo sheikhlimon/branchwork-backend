@@ -2,7 +2,7 @@
 // Multi-tenant retail console with branch-scoped RBAC
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 

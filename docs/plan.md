@@ -15,7 +15,7 @@ Phased implementation roadmap for Branchwork. Each phase is developed on an isol
 - [x] Merge into `main`
 
 ## Phase 1: Database Schema & Prisma (`feat/db-schema`)
-- [x] Configure `prisma/schema.prisma` with SQLite & PostgreSQL compatibility
+- [x] Configure `prisma/schema.prisma` with PostgreSQL 16
 - [x] Define models: `Organization`, `Branch`, `Role`, `User`, `Product`
 - [x] Implement `PrismaService` and `PrismaModule`
 - [x] Push schema to database (`npx prisma db push`)

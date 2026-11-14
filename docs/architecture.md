@@ -13,7 +13,7 @@ flowchart TD
     Client["Single-Page Console / Frontend\n[HTML / JS App]"]
     API["Branchwork Core API Service\n[REST Endpoints & Guards]"]
     AuthGuard["RBAC & Tenant Scoping Guard\n[JWT Verification + Policy Engine]"]
-    DB[(Relational Database\n[PostgreSQL / SQLite])]
+    DB[(Relational Database\n[PostgreSQL 16])]
 
     Client -->|HTTP REST Requests with Bearer JWT| API
     API -->|1. Intercept & Validate Claims| AuthGuard
@@ -173,5 +173,5 @@ Every table (`BRANCH`, `ROLE`, `USER`, `PRODUCT`) maintains an explicit `organiz
 
 ### ADR 2: Runtime and Containers
 * **Context:** Reviewers run different package managers (npm, pnpm, bun) and container engines (Docker, Podman).
-* **Decision:** We targeted Node.js 24+, supported SQLite for instant local runs, and provided `compose.yaml` for containerized runs.
-* **Consequences:** Zero global configuration required to review the code locally. Reviewers can test via standard `npm install` / `bun install`, or run the full stack with `docker compose up --build` or `podman compose up --build`.
+* **Decision:** We targeted Node.js 24+, PostgreSQL 16 as the primary database, and provided `compose.yaml` for containerized runs.
+* **Consequences:** Zero global configuration required to review the code locally. Reviewers can test via standard `npm install` / `bun install` with `docker compose up -d postgres`, or run the full stack with `docker compose up --build` or `podman compose up --build`.
