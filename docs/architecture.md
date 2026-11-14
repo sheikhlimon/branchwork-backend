@@ -161,3 +161,17 @@ Every table (`BRANCH`, `ROLE`, `USER`, `PRODUCT`) maintains an explicit `organiz
 * `PATCH /api/products/:id/organize` (Owner OR Staff with `organize_products`)
   * Allowed payload: `{ category, stock, branchId }`.
   * **Enforcement:** If caller is staff, target product's current `branch_id` must match `currentUser.branch_id`.
+
+---
+
+## 6. Key Decisions (ADR)
+
+### ADR 1: NestJS over FastAPI
+* **Context:** The role specification allowed either FastAPI or NestJS for this API.
+* **Decision:** We chose NestJS with TypeScript and Prisma.
+* **Consequences:** Guards (`RolesGuard`, `JwtAuthGuard`) handle tenant isolation and branch-scoped authorization before route handlers run, keeping business logic clean. TypeScript interfaces and DTOs wire directly into OpenAPI (`/api/docs`) without duplicate schema maintenance.
+
+### ADR 2: Runtime and Containers
+* **Context:** Reviewers run different package managers (npm, pnpm, bun) and container engines (Docker, Podman).
+* **Decision:** We locked Node.js 24 in `.node-version` and `engines`, supported SQLite for instant local runs, and provided `compose.yaml` for containerized runs.
+* **Consequences:** Zero global configuration required to review the code locally. Reviewers can test via standard `npm install` / `bun install`, or run the full stack with `docker compose up --build` or `podman compose up --build`.
