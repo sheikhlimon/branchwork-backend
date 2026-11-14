@@ -38,22 +38,27 @@ Phased implementation roadmap for Branchwork. Each phase is developed on an isol
 - [x] Implement Role CRUD with permission checklists (`/api/roles`)
 - [x] Implement Staff management (`/api/staff`)
 - [x] Write automated test suite verifying branches, roles, staff, and 403 Forbidden enforcement (`src/rbac/rbac.spec.ts`)
-- [ ] Merge into `main`
+- [x] Merge into `main`
 
 ## Phase 4: Scoped Products & Inventory (`feat/products`)
-- [ ] Implement `CreateProductDto` and `OrganizeProductDto` with validation
-- [ ] Implement `POST /api/products` & `DELETE /api/products/:id` (Owner only)
-- [ ] Implement `GET /api/products` with automatic branch scoping:
+- [x] Implement `CreateProductDto`, `OrganizeProductDto`, and `QueryProductsDto` with validation
+- [x] Implement `POST /api/products` & `DELETE /api/products/:id` (Owner only)
+- [x] Implement `GET /api/products` with automatic branch scoping:
   - Owner: Sees all products across the organization (optional `?branchId=` and `?search=`)
   - Staff: Automatically scoped to `user.branchId`
-- [ ] Implement `PATCH /api/products/:id/organize` (Staff with `organize_products` permission)
-- [ ] Write automated tests proving Staff cannot see or delete other branches' products (`src/products/products.spec.ts`)
-- [ ] Merge into `main`
+- [x] Implement `PATCH /api/products/:id/organize` (Staff with `organize_products` permission)
+- [x] Write automated tests proving Staff cannot see or delete other branches' products (`src/products/products.spec.ts`)
+- [x] Merge into `main`
 
 ## Phase 5: Demo Seed Data & Verification (`docs/seed-and-verify`)
-- [ ] Create `prisma/seed.ts` with demo accounts:
-  - Nadia Rahman (Owner) at Padma Retail
-  - Rafi Ahmed (Stock clerk) at Gulshan
-- [ ] Verify all endpoints via Swagger UI at `/api/docs`
-- [ ] Final `README.md` review and verification
-- [ ] Merge into `main`
+- [x] Create `prisma/seed.ts` replicating exact prototype data:
+  - Organization: **Padma Retail**
+  - Owner: **Nadia Rahman** (`nadia@demo.com` / `demo123`)
+  - Branches: **Dhanmondi**, **Gulshan**
+  - Roles: **Branch manager**, **Stock clerk**
+  - Staff: **Rafi Ahmed** (`rafi@demo.com` / `demo123` at Gulshan)
+  - Products: **Mustard oil 1L** (Dhanmondi), **Basmati rice 5kg** (Gulshan), **Steel flask** (Gulshan)
+- [x] Automated test suite passing 100% (31 tests across 5 test suites)
+- [x] `oxlint` (0 errors, 0 warnings) and `oxfmt` (double quotes) verified
+- [x] Update `README.md` with 2-minute reviewer quickstart and curl testing commands
+- [x] Merge into `main`

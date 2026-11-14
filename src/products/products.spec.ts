@@ -75,10 +75,10 @@ describe("ProductsService Branch Scoping & Inventory Test Suite", () => {
   });
 
   it("Owner should create products matching the prototype specification", async () => {
-    // 1. Mustard oil 1L (OIL-001) in Dhanmondi
+    // 1. Mustard oil 1L (TEST-OIL-001) in Dhanmondi
     const oil = await productsService.create(orgId, {
       name: "Mustard oil 1L",
-      sku: "OIL-001",
+      sku: "TEST-OIL-001",
       category: "Grocery",
       price: 112.6,
       stock: 50,
@@ -86,13 +86,13 @@ describe("ProductsService Branch Scoping & Inventory Test Suite", () => {
     });
     mustardOilId = oil.id;
     expect(oil.name).toBe("Mustard oil 1L");
-    expect(oil.sku).toBe("OIL-001");
+    expect(oil.sku).toBe("TEST-OIL-001");
     expect(oil.branch.name).toBe("Dhanmondi");
 
-    // 2. Basmati rice 5kg (RIC-005) in Gulshan
+    // 2. Basmati rice 5kg (TEST-RIC-005) in Gulshan
     const rice = await productsService.create(orgId, {
       name: "Basmati rice 5kg",
-      sku: "RIC-005",
+      sku: "TEST-RIC-005",
       category: "Grocery",
       price: 890.0,
       stock: 40,
@@ -101,10 +101,10 @@ describe("ProductsService Branch Scoping & Inventory Test Suite", () => {
     basmatiRiceId = rice.id;
     expect(rice.branch.name).toBe("Gulshan");
 
-    // 3. Steel flask (HOM-212) in Gulshan
+    // 3. Steel flask (TEST-HOM-212) in Gulshan
     const flask = await productsService.create(orgId, {
       name: "Steel flask",
-      sku: "HOM-212",
+      sku: "TEST-HOM-212",
       category: "Home",
       price: 1250.0,
       stock: 20,
@@ -118,7 +118,7 @@ describe("ProductsService Branch Scoping & Inventory Test Suite", () => {
     await expect(
       productsService.create(orgId, {
         name: "Duplicate Mustard Oil",
-        sku: "OIL-001", // Duplicate SKU
+        sku: "TEST-OIL-001", // Duplicate SKU
         category: "Grocery",
         price: 115.0,
         stock: 10,
@@ -138,9 +138,9 @@ describe("ProductsService Branch Scoping & Inventory Test Suite", () => {
         branchId: gulshanId,
       });
       expect(gulshanProducts.length).toBe(2);
-      expect(gulshanProducts.map((p) => p.sku)).toContain("RIC-005");
-      expect(gulshanProducts.map((p) => p.sku)).toContain("HOM-212");
-      expect(gulshanProducts.map((p) => p.sku)).not.toContain("OIL-001");
+      expect(gulshanProducts.map((p) => p.sku)).toContain("TEST-RIC-005");
+      expect(gulshanProducts.map((p) => p.sku)).toContain("TEST-HOM-212");
+      expect(gulshanProducts.map((p) => p.sku)).not.toContain("TEST-OIL-001");
     });
 
     it("Owner searching by query should filter correctly", async () => {
@@ -157,9 +157,9 @@ describe("ProductsService Branch Scoping & Inventory Test Suite", () => {
       expect(staffProducts.length).toBe(2);
 
       const skus = staffProducts.map((p) => p.sku);
-      expect(skus).toContain("RIC-005"); // Basmati rice 5kg (Gulshan)
-      expect(skus).toContain("HOM-212"); // Steel flask (Gulshan)
-      expect(skus).not.toContain("OIL-001"); // Mustard oil 1L (Dhanmondi) - NEVER LEAKED!
+      expect(skus).toContain("TEST-RIC-005"); // Basmati rice 5kg (Gulshan)
+      expect(skus).toContain("TEST-HOM-212"); // Steel flask (Gulshan)
+      expect(skus).not.toContain("TEST-OIL-001"); // Mustard oil 1L (Dhanmondi) - NEVER LEAKED!
     });
 
     it("CRITICAL: Staff attempting to tamper query with another branchId is ignored and still scoped to their branch", async () => {
@@ -170,7 +170,7 @@ describe("ProductsService Branch Scoping & Inventory Test Suite", () => {
 
       // Backend security invariant: user.branchId overrides client query!
       expect(staffProducts.length).toBe(2);
-      expect(staffProducts.map((p) => p.sku)).not.toContain("OIL-001");
+      expect(staffProducts.map((p) => p.sku)).not.toContain("TEST-OIL-001");
     });
   });
 

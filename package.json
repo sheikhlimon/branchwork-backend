@@ -16,7 +16,7 @@
     "start:prod": "node dist/main",
     "prisma:generate": "prisma generate",
     "prisma:push": "prisma db push",
-    "seed": "ts-node prisma/seed.ts",
+    "seed": "bun run prisma/seed.ts",
     "test": "bun test",
     "test:watch": "bun test --watch",
     "test:cov": "bun test --coverage"
@@ -50,7 +50,6 @@
     "oxfmt": "^0.78.0",
     "oxlint": "^1.93.0",
     "prisma": "^6.4.0",
-    "ts-node": "^10.9.2",
     "typescript": "^5.7.0"
   }
 }
