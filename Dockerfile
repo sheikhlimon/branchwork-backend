@@ -1,11 +1,11 @@
-FROM node:22-alpine AS builder
+FROM node:24-alpine AS builder
 
 WORKDIR /app
 
 # Install dependencies needed for native modules (bcrypt)
 RUN apk add --no-cache python3 make g++
 
-COPY package.json bun.lockb* package-lock.json* ./
+COPY package.json bun.lock* package-lock.json* ./
 RUN npm install
 
 COPY prisma ./prisma/
@@ -17,7 +17,7 @@ COPY src ./src
 RUN npm run build
 
 # Production runner stage
-FROM node:22-alpine AS runner
+FROM node:24-alpine AS runner
 
 WORKDIR /app
 

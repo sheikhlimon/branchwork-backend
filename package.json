@@ -5,6 +5,9 @@
   "author": "Sheikh Limon <sheikhlimondev@gmail.com>",
   "private": true,
   "license": "MIT",
+  "engines": {
+    "node": ">=24.0.0"
+  },
   "scripts": {
     "build": "nest build",
     "format": "oxfmt --write src",
@@ -17,6 +20,8 @@
     "prisma:generate": "prisma generate",
     "prisma:push": "prisma db push",
     "seed": "bun run prisma/seed.ts",
+    "docker:up": "docker compose up --build",
+    "docker:down": "docker compose down",
     "test": "bun test",
     "test:watch": "bun test --watch",
     "test:cov": "bun test --coverage"
