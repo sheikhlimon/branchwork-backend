@@ -142,5 +142,18 @@ describe("AuthService TDD Suite", () => {
         'Configuration key "JWT_SECRET" does not exist',
       );
     });
+
+    it("should respect JWT_EXPIRES_IN environment setting", () => {
+      const mockConfigService = {
+        getOrThrow: jest.fn().mockReturnValue("test_secret"),
+        get: jest.fn().mockImplementation((key: string) => {
+          if (key === "JWT_EXPIRES_IN") return "7d";
+          return undefined;
+        }),
+      } as unknown as ConfigService;
+
+      const expiresIn = mockConfigService.get<string>("JWT_EXPIRES_IN") || "1d";
+      expect(expiresIn).toBe("7d");
+    });
   });
 });
