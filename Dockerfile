@@ -5,7 +5,7 @@ WORKDIR /app
 # Install dependencies needed for native modules (bcrypt)
 RUN apk add --no-cache python3 make g++
 
-COPY package.json bun.lock* package-lock.json* ./
+COPY package.json package-lock.json* ./
 RUN npm install
 
 COPY prisma ./prisma/

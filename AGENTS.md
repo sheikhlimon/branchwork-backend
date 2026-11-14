@@ -5,7 +5,7 @@ Operational guidelines and architectural invariants for Branchwork Backend.
 ## 1. Project Context & Toolchain
 - **Domain:** Multi-tenant retail console backend with branch-scoped RBAC.
 - **Runtime & Framework:** Node.js 24+ / TypeScript / NestJS.
-- **Package Manager & Test Runner:** `bun` (fast execution, test runner, script orchestration).
+- **Package Manager & Test Runner:** `npm` / Jest test runner.
 - **Sub-Second Tooling:** `oxlint` (linter) + `oxfmt` (formatter with double quotes).
 - **Database & ORM:** PostgreSQL 16 (via Docker / Podman or local service) via Prisma ORM.
 - **Auth & Security:** JWT (Access Tokens) + bcrypt password hashing + NestJS Guards.
@@ -14,17 +14,21 @@ Operational guidelines and architectural invariants for Branchwork Backend.
 ## 2. Essential Commands
 ```bash
 # Dependencies & Setup
-bun install                # Or npm install
+npm install
 npx prisma generate
 npx prisma db push
 
 # Development & Testing
-bun run start:dev          # Start NestJS in watch mode
-bun run build              # Compile TypeScript production build
-bun test                   # Run instant unit/integration test suite
-bun run lint               # Run oxlint
-bun run format             # Format with oxfmt (double quotes)
-bun run seed               # Seed demo data (Padma Retail, Nadia Rahman, Rafi Ahmed)
+npm run start:dev          # Start NestJS in watch mode
+npm run build              # Compile TypeScript production build
+npm test                   # Run Jest unit/integration test suite
+npm run lint               # Run oxlint
+npm run format             # Format with oxfmt (double quotes)
+npm run seed               # Seed demo data (Padma Retail, Nadia Rahman, Rafi Ahmed)
+
+# Containers (Docker / Podman)
+npm run docker:up          # Start PostgreSQL & API container
+npm run docker:down        # Stop containers
 ```
 
 ## 3. Git & Branching Conventions
@@ -61,6 +65,6 @@ src/
 
 ## 7. Definition of Done (DoD)
 - Every endpoint has a corresponding DTO with validation decorators.
-- Zero `any` in TypeScript (`bun run lint` passes with 0 warnings).
-- Scoping rules verified with automated tests (`bun test` passes).
+- Zero `any` in TypeScript (`npm run lint` passes with 0 warnings).
+- Scoping rules verified with automated tests (`npm test` passes).
 - Code compiles cleanly with zero TypeScript errors (`npx tsc --noEmit`).

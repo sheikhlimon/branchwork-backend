@@ -2,8 +2,6 @@
 
 > Multi-tenant retail organization console backend with branch-scoped Role-Based Access Control (RBAC), built with **NestJS**, **TypeScript**, and **Prisma ORM**.
 
----
-
 ## Architecture Overview
 
 Branchwork powers a multi-branch retail organization console:
@@ -15,31 +13,27 @@ Full C2 architecture diagrams, ERD, and key architectural decisions (ADRs) are d
 Implementation roadmap and feature branches are tracked in [`docs/plan.md`](docs/plan.md).  
 Developer guidelines and invariants are defined in [`AGENTS.md`](AGENTS.md).
 
----
-
 ## Tech Stack & Tooling
 
 - **Runtime:** Node.js 24+
 - **Framework:** [NestJS](https://nestjs.com/) (Modular architecture, Guards, Dependency Injection)
-- **Language:** TypeScript 5.7+ (Strict types, zero `any`)
+- **Language:** TypeScript 5.7+
 - **ORM & Database:** [Prisma](https://www.prisma.io/) with PostgreSQL 16 (via Docker / Podman or local service)
 - **Sub-Second Tooling:** [oxlint](https://oxc.rs/) (fast Rust linter) + [oxfmt](https://oxc.rs/) (double quotes formatting)
 - **Authentication:** Stateless JWT + `bcrypt` password hashing
 - **Documentation:** Interactive OpenAPI / Swagger UI at `/api/docs`
 
----
-
 ## 2-Minute Quickstart
 
 ### Prerequisites
-- Node.js 24+ (`npm` or `bun`)
+- Node.js 24+ (`npm`)
 - Docker or Podman (for running PostgreSQL or the full container stack)
 
 ### Option A: Local Run (Fastest)
 
 ```bash
 # 1. Install dependencies
-bun install   # or: npm install
+npm install
 
 # 2. Configure environment
 cp .env.example .env
@@ -49,13 +43,13 @@ docker compose up -d postgres   # or: podman compose up -d postgres
 
 # 4. Push database schema & seed demo accounts
 npx prisma db push
-bun run seed                    # or: npm run seed
+npm run seed
 
 # 5. Run tests
-bun test                        # or: npm test
+npm test
 
 # 6. Start development server
-bun run start:dev
+npm run start:dev
 ```
 
 Once running:
@@ -73,16 +67,12 @@ podman compose up --build
 ```
 Spins up PostgreSQL 16 and the NestJS API with database migrations and healthchecks automatically configured.
 
----
-
 ## Demo Credentials (From Prototype Specification)
 
 | Role | Email | Password | Assigned Branch | Permissions |
 | :--- | :--- | :--- | :--- | :--- |
 | **Owner (Nadia Rahman)** | `nadia@demo.com` | `demo123` | *All Branches* | Superadmin (`*` wildcard) |
 | **Stock Clerk (Rafi Ahmed)** | `rafi@demo.com` | `demo123` | **Gulshan** | `view_products`, `organize_products` (Gulshan only) |
-
----
 
 ## Testing Scoping via cURL
 
@@ -115,8 +105,6 @@ curl -X DELETE http://localhost:3000/api/products/<PRODUCT_ID> \
   -H "Authorization: Bearer <RAFI_TOKEN>"
 ```
 *Returns **`403 Forbidden`** (Only owner can delete products).*
-
----
 
 ## License
 

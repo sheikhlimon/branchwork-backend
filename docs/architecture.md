@@ -170,8 +170,3 @@ Every table (`BRANCH`, `ROLE`, `USER`, `PRODUCT`) maintains an explicit `organiz
 * **Context:** The role specification allowed either FastAPI or NestJS for this API.
 * **Decision:** We chose NestJS with TypeScript and Prisma.
 * **Consequences:** Guards (`RolesGuard`, `JwtAuthGuard`) handle tenant isolation and branch-scoped authorization before route handlers run, keeping business logic clean. TypeScript interfaces and DTOs wire directly into OpenAPI (`/api/docs`) without duplicate schema maintenance.
-
-### ADR 2: Runtime and Containers
-* **Context:** Reviewers run different package managers (npm, pnpm, bun) and container engines (Docker, Podman).
-* **Decision:** We targeted Node.js 24+, PostgreSQL 16 as the primary database, and provided `compose.yaml` for containerized runs.
-* **Consequences:** Zero global configuration required to review the code locally. Reviewers can test via standard `npm install` / `bun install` with `docker compose up -d postgres`, or run the full stack with `docker compose up --build` or `podman compose up --build`.
