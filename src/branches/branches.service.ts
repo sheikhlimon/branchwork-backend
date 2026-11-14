@@ -1,0 +1,47 @@
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { PrismaService } from "../prisma/prisma.service";
+import { CreateBranchDto } from "./dto/create-branch.dto";
+
+@Injectable()
+export class BranchesService {
+  constructor(private readonly prisma: PrismaService) {}
+
+  async findAll(organizationId: string) {
+    return this.prisma.branch.findMany({
+      where: { organizationId },
+      include: {
+        _count: {
+          select: {
+            users: true,
+            products: true,
+          },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+  }
+
+  async create(organizationId: string, dto: CreateBranchDto) {
+    return this.prisma.branch.create({
+      data: {
+        organizationId,
+        name: dto.name.trim(),
+        city: dto.city.trim(),
+      },
+    });
+  }
+
+  async delete(organizationId: string, branchId: string) {
+    const branch = await this.prisma.branch.findFirst({
+      where: { id: branchId, organizationId },
+    });
+
+    if (!branch) {
+      throw new NotFoundException("Branch not found");
+    }
+
+    return this.prisma.branch.delete({
+      where: { id: branch.id },
+    });
+  }
+}

@@ -24,9 +24,7 @@ async function bootstrap() {
   // Configure Swagger OpenAPI documentation
   const config = new DocumentBuilder()
     .setTitle("Branchwork API")
-    .setDescription(
-      "Multi-tenant retail console backend with branch-scoped RBAC",
-    )
+    .setDescription("Multi-tenant retail console backend with branch-scoped RBAC")
     .setVersion("1.0.0")
     .addBearerAuth()
     .build();
@@ -37,8 +35,6 @@ async function bootstrap() {
   const port = process.env.PORT || 3000;
   await app.listen(port);
   console.log(`🚀 Branchwork API is running on: http://localhost:${port}/api`);
-  console.log(
-    `📚 Interactive Swagger Docs available at: http://localhost:${port}/api/docs`,
-  );
+  console.log(`📚 Interactive Swagger Docs available at: http://localhost:${port}/api/docs`);
 }
 bootstrap();

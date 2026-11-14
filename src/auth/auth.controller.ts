@@ -1,18 +1,5 @@
-import {
-  Controller,
-  Post,
-  Get,
-  Body,
-  UseGuards,
-  HttpCode,
-  HttpStatus,
-} from "@nestjs/common";
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBearerAuth,
-} from "@nestjs/swagger";
+import { Controller, Post, Get, Body, UseGuards, HttpCode, HttpStatus } from "@nestjs/common";
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from "@nestjs/swagger";
 import { AuthService } from "./auth.service";
 import { RegisterOrgDto } from "./dto/register-org.dto";
 import { LoginDto } from "./dto/login.dto";
@@ -46,8 +33,7 @@ export class AuthController {
   @ApiOperation({ summary: "Log in with email and password" })
   @ApiResponse({
     status: 200,
-    description:
-      "Authenticated successfully. Returns access token and scoped profile.",
+    description: "Authenticated successfully. Returns access token and scoped profile.",
   })
   @ApiResponse({
     status: 401,
