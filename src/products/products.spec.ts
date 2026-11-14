@@ -180,6 +180,22 @@ describe("ProductsService Branch Scoping & Inventory Test Suite", () => {
       expect(searchResults[0].name).toBe("Basmati rice 5kg");
     });
 
+    it("Owner searching case-insensitively should match mixed-case name, SKU, or category", async () => {
+      // Lowercase "mustard" should match "Mustard oil 1L"
+      const nameResults = await productsService.findAll(ownerUser, {
+        search: "mustard",
+      });
+      expect(nameResults.length).toBe(1);
+      expect(nameResults[0].sku).toBe("TEST-OIL-001");
+
+      // Lowercase "test-oil" should match uppercase SKU "TEST-OIL-001"
+      const skuResults = await productsService.findAll(ownerUser, {
+        search: "test-oil",
+      });
+      expect(skuResults.length).toBe(1);
+      expect(skuResults[0].sku).toBe("TEST-OIL-001");
+    });
+
     it("CRITICAL: Staff at Gulshan MUST ONLY receive Gulshan products and NEVER Dhanmondi products", async () => {
       // Even if staff does not pass any query param, backend automatically scopes to Gulshan
       const staffProducts = await productsService.findAll(gulshanStaffUser, {});
