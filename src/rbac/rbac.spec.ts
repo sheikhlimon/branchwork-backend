@@ -1,5 +1,5 @@
 import { Test, TestingModule } from "@nestjs/testing";
-import { ForbiddenException, ExecutionContext } from "@nestjs/common";
+import { ForbiddenException, ConflictException, ExecutionContext } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 import { ConfigModule } from "@nestjs/config";
 import { JwtModule } from "@nestjs/jwt";
@@ -9,6 +9,7 @@ import { AuthService } from "../auth/auth.service";
 import { BranchesService } from "../branches/branches.service";
 import { RolesService } from "../roles/roles.service";
 import { StaffService } from "../staff/staff.service";
+import { StaffController } from "../staff/staff.controller";
 import { RolesGuard } from "../common/guards/roles.guard";
 import { REQUIRE_OWNER_KEY } from "../common/decorators/require-owner.decorator";
 import { REQUIRE_PERMISSION_KEY } from "../common/decorators/require-permission.decorator";
@@ -221,6 +222,52 @@ describe("RBAC & Branch Scoping Test Suite", () => {
       const context = createMockContext(branchManagerUser, {});
       const allowed = await rolesGuard.canActivate(context);
       expect(allowed).toBe(true);
+    });
+
+    it("StaffController create and delete endpoints must be protected with @RequireOwner()", () => {
+      const isCreateOwnerOnly = reflector.get<boolean>(
+        REQUIRE_OWNER_KEY,
+        StaffController.prototype.create,
+      );
+      const isDeleteOwnerOnly = reflector.get<boolean>(
+        REQUIRE_OWNER_KEY,
+        StaffController.prototype.delete,
+      );
+
+      expect(isCreateOwnerOnly).toBe(true);
+      expect(isDeleteOwnerOnly).toBe(true);
+    });
+  });
+
+  describe("Branch Deletion Invariants", () => {
+    it("should reject deleting a branch that contains active products with ConflictException", async () => {
+      // Create a test product inside Dhanmondi branch
+      await prisma.product.create({
+        data: {
+          organizationId: orgId,
+          branchId: dhanmondiBranchId,
+          name: "Test Branch Product",
+          sku: "TEST-BRANCH-DEL-01",
+          category: "General",
+          price: 50.0,
+          stock: 5,
+        },
+      });
+
+      // Attempting to delete Dhanmondi should throw ConflictException instead of crashing
+      await expect(branchesService.delete(orgId, dhanmondiBranchId)).rejects.toThrow(
+        ConflictException,
+      );
+    });
+
+    it("should delete branch successfully when it has no active products", async () => {
+      const emptyBranch = await branchesService.create(orgId, {
+        name: "Temporary Branch",
+        city: "Chittagong",
+      });
+
+      const deleted = await branchesService.delete(orgId, emptyBranch.id);
+      expect(deleted.id).toBe(emptyBranch.id);
     });
   });
 });

@@ -27,7 +27,12 @@ export class ProductsService {
     }
 
     const existingSku = await this.prisma.product.findUnique({
-      where: { sku: dto.sku.trim().toUpperCase() },
+      where: {
+        organizationId_sku: {
+          organizationId,
+          sku: dto.sku.trim().toUpperCase(),
+        },
+      },
     });
 
     if (existingSku) {
@@ -58,10 +63,18 @@ export class ProductsService {
   async findAll(user: AuthenticatedUser, query: QueryProductsDto) {
     // Branch scoping invariant:
     // If Owner: view all branches, or filter by requested branchId.
-    // If Staff: permanently locked to user.branchId.
-    const resolvedBranchId = user.isOwner ? query.branchId : (user.branchId ?? undefined);
+    // If Staff: permanently locked to user.branchId; reject unassigned staff accounts.
+    if (!user.isOwner && !user.branchId) {
+      throw new ForbiddenException("Staff account is not assigned to an active branch");
+    }
+
+    const resolvedBranchId = user.isOwner ? query.branchId : user.branchId;
 
     const search = query.search?.trim();
+    const page = query.page && query.page > 0 ? query.page : undefined;
+    const limit = query.limit && query.limit > 0 ? query.limit : undefined;
+    const skip = page && limit ? (page - 1) * limit : undefined;
+    const take = limit;
 
     return this.prisma.product.findMany({
       where: {
@@ -70,13 +83,15 @@ export class ProductsService {
         ...(search
           ? {
               OR: [
-                { name: { contains: search } },
-                { sku: { contains: search } },
-                { category: { contains: search } },
+                { name: { contains: search, mode: "insensitive" } },
+                { sku: { contains: search, mode: "insensitive" } },
+                { category: { contains: search, mode: "insensitive" } },
               ],
             }
           : {}),
       },
+      ...(skip !== undefined ? { skip } : {}),
+      ...(take !== undefined ? { take } : {}),
       include: {
         branch: {
           select: { id: true, name: true, city: true },

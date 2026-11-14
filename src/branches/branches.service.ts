@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { Injectable, NotFoundException, ConflictException } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateBranchDto } from "./dto/create-branch.dto";
 
@@ -34,10 +34,21 @@ export class BranchesService {
   async delete(organizationId: string, branchId: string) {
     const branch = await this.prisma.branch.findFirst({
       where: { id: branchId, organizationId },
+      include: {
+        _count: {
+          select: { products: true },
+        },
+      },
     });
 
     if (!branch) {
       throw new NotFoundException("Branch not found");
+    }
+
+    if (branch._count.products > 0) {
+      throw new ConflictException(
+        `Cannot delete branch '${branch.name}'. It contains ${branch._count.products} active products. Reassign or delete products first.`,
+      );
     }
 
     return this.prisma.branch.delete({

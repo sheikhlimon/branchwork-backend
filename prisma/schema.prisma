@@ -79,7 +79,7 @@ model Product {
   organizationId String
   branchId       String
   name           String
-  sku            String       @unique
+  sku            String
   category       String
   price          Float
   stock          Int          @default(0)
@@ -89,5 +89,6 @@ model Product {
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   branch         Branch       @relation(fields: [branchId], references: [id], onDelete: Restrict)
 
+  @@unique([organizationId, sku])
   @@map("products")
 }
