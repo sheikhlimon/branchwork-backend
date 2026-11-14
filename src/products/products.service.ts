@@ -63,8 +63,12 @@ export class ProductsService {
   async findAll(user: AuthenticatedUser, query: QueryProductsDto) {
     // Branch scoping invariant:
     // If Owner: view all branches, or filter by requested branchId.
-    // If Staff: permanently locked to user.branchId.
-    const resolvedBranchId = user.isOwner ? query.branchId : (user.branchId ?? undefined);
+    // If Staff: permanently locked to user.branchId; reject unassigned staff accounts.
+    if (!user.isOwner && !user.branchId) {
+      throw new ForbiddenException("Staff account is not assigned to an active branch");
+    }
+
+    const resolvedBranchId = user.isOwner ? query.branchId : user.branchId;
 
     const search = query.search?.trim();
 

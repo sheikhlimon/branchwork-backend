@@ -201,6 +201,22 @@ describe("ProductsService Branch Scoping & Inventory Test Suite", () => {
       expect(staffProducts.length).toBe(2);
       expect(staffProducts.map((p) => p.sku)).not.toContain("TEST-OIL-001");
     });
+
+    it("CRITICAL: Staff without assigned branch MUST be rejected with ForbiddenException", async () => {
+      const unassignedStaffUser: AuthenticatedUser = {
+        id: "unassigned_staff_id",
+        email: "unassigned@demo.com",
+        organizationId: orgId,
+        branchId: null,
+        roleId: "some_role_id",
+        roleName: "Stock clerk",
+        isOwner: false,
+      };
+
+      await expect(
+        productsService.findAll(unassignedStaffUser, {}),
+      ).rejects.toThrow(ForbiddenException);
+    });
   });
 
   describe("Product Organizing (PATCH /api/products/:id/organize)", () => {
