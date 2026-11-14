@@ -1,5 +1,5 @@
 import { Test, TestingModule } from "@nestjs/testing";
-import { ForbiddenException, ExecutionContext } from "@nestjs/common";
+import { ForbiddenException, ConflictException, ExecutionContext } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 import { ConfigModule } from "@nestjs/config";
 import { JwtModule } from "@nestjs/jwt";
@@ -221,6 +221,38 @@ describe("RBAC & Branch Scoping Test Suite", () => {
       const context = createMockContext(branchManagerUser, {});
       const allowed = await rolesGuard.canActivate(context);
       expect(allowed).toBe(true);
+    });
+  });
+
+  describe("Branch Deletion Invariants", () => {
+    it("should reject deleting a branch that contains active products with ConflictException", async () => {
+      // Create a test product inside Dhanmondi branch
+      await prisma.product.create({
+        data: {
+          organizationId: orgId,
+          branchId: dhanmondiBranchId,
+          name: "Test Branch Product",
+          sku: "TEST-BRANCH-DEL-01",
+          category: "General",
+          price: 50.0,
+          stock: 5,
+        },
+      });
+
+      // Attempting to delete Dhanmondi should throw ConflictException instead of crashing
+      await expect(
+        branchesService.delete(orgId, dhanmondiBranchId),
+      ).rejects.toThrow(ConflictException);
+    });
+
+    it("should delete branch successfully when it has no active products", async () => {
+      const emptyBranch = await branchesService.create(orgId, {
+        name: "Temporary Branch",
+        city: "Chittagong",
+      });
+
+      const deleted = await branchesService.delete(orgId, emptyBranch.id);
+      expect(deleted.id).toBe(emptyBranch.id);
     });
   });
 });
