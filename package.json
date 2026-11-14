@@ -8,6 +8,8 @@
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.ts\"",
+    "lint": "oxlint",
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
@@ -15,9 +17,9 @@
     "prisma:generate": "prisma generate",
     "prisma:push": "prisma db push",
     "seed": "ts-node prisma/seed.ts",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:cov": "jest --coverage"
+    "test": "bun test",
+    "test:watch": "bun test --watch",
+    "test:cov": "bun test --coverage"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.0",
@@ -45,6 +47,8 @@
     "@types/express": "^5.0.0",
     "@types/node": "^22.0.0",
     "@types/passport-jwt": "^4.0.1",
+    "oxlint": "^1.93.0",
+    "prettier": "^3.10.1",
     "prisma": "^6.4.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.7.0"

@@ -2,12 +2,12 @@ import {
   Injectable,
   ConflictException,
   UnauthorizedException,
-} from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import * as bcrypt from 'bcrypt';
-import { PrismaService } from '../prisma/prisma.service';
-import { RegisterOrgDto } from './dto/register-org.dto';
-import { LoginDto } from './dto/login.dto';
+} from "@nestjs/common";
+import { JwtService } from "@nestjs/jwt";
+import * as bcrypt from "bcrypt";
+import { PrismaService } from "../prisma/prisma.service";
+import { RegisterOrgDto } from "./dto/register-org.dto";
+import { LoginDto } from "./dto/login.dto";
 
 export interface JwtPayload {
   sub: string;
@@ -35,7 +35,7 @@ export class AuthService {
     });
 
     if (existingUser) {
-      throw new ConflictException('Email is already registered');
+      throw new ConflictException("Email is already registered");
     }
 
     const saltRounds = 10;
@@ -100,7 +100,7 @@ export class AuthService {
     });
 
     if (!user) {
-      throw new UnauthorizedException('Invalid email or password');
+      throw new UnauthorizedException("Invalid email or password");
     }
 
     const isPasswordValid = await bcrypt.compare(
@@ -109,7 +109,7 @@ export class AuthService {
     );
 
     if (!isPasswordValid) {
-      throw new UnauthorizedException('Invalid email or password');
+      throw new UnauthorizedException("Invalid email or password");
     }
 
     const payload: JwtPayload = {
@@ -138,9 +138,9 @@ export class AuthService {
         roleId: user.roleId,
         roleName: user.role?.name || null,
         permissions: user.role
-          ? JSON.parse(user.role.permissions || '[]')
+          ? JSON.parse(user.role.permissions || "[]")
           : user.isOwner
-            ? ['*']
+            ? ["*"]
             : [],
       },
     };
@@ -160,7 +160,7 @@ export class AuthService {
     });
 
     if (!user) {
-      throw new UnauthorizedException('User not found');
+      throw new UnauthorizedException("User not found");
     }
 
     return {
@@ -175,9 +175,9 @@ export class AuthService {
       roleId: user.roleId,
       roleName: user.role?.name || null,
       permissions: user.role
-        ? JSON.parse(user.role.permissions || '[]')
+        ? JSON.parse(user.role.permissions || "[]")
         : user.isOwner
-          ? ['*']
+          ? ["*"]
           : [],
     };
   }

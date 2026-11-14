@@ -1,8 +1,8 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication, ValidationPipe } from '@nestjs/common';
-import { AppModule } from './app.module';
+import { Test, TestingModule } from "@nestjs/testing";
+import { INestApplication, ValidationPipe } from "@nestjs/common";
+import { AppModule } from "./app.module";
 
-describe('AppModule Bootstrap E2E Test', () => {
+describe("AppModule Bootstrap E2E Test", () => {
   let app: INestApplication;
 
   beforeAll(async () => {
@@ -25,7 +25,7 @@ describe('AppModule Bootstrap E2E Test', () => {
     await app.close();
   });
 
-  it('should successfully bootstrap AppModule without dependency injection errors', () => {
+  it("should successfully bootstrap AppModule without dependency injection errors", () => {
     expect(app).toBeDefined();
   });
 });

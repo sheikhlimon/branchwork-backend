@@ -101,4 +101,25 @@ describe('AuthService TDD Suite', () => {
       ).rejects.toThrow(UnauthorizedException);
     });
   });
+
+  describe('Session Profile Resolution (getMe)', () => {
+    it('should return the full session profile with wildcard permissions for owner', async () => {
+      const loginRes = await authService.login({
+        email: 'nadia.test@demo.com',
+        password: 'demo123password',
+      });
+
+      const profile = await authService.getMe(loginRes.user.id);
+      expect(profile).toBeDefined();
+      expect(profile.email).toBe('nadia.test@demo.com');
+      expect(profile.isOwner).toBe(true);
+      expect(profile.permissions).toContain('*');
+    });
+
+    it('should throw UnauthorizedException if user ID does not exist', async () => {
+      await expect(authService.getMe('non-existent-user-id')).rejects.toThrow(
+        UnauthorizedException,
+      );
+    });
+  });
 });
