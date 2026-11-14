@@ -4,7 +4,7 @@ Operational guidelines and architectural invariants for Branchwork Backend.
 
 ## 1. Project Context & Toolchain
 - **Domain:** Multi-tenant retail console backend with branch-scoped RBAC.
-- **Runtime & Framework:** Node.js 26+ / TypeScript / NestJS.
+- **Runtime & Framework:** Node.js 24+ / TypeScript / NestJS.
 - **Package Manager & Test Runner:** `bun` (fast execution, test runner, script orchestration).
 - **Sub-Second Tooling:** `oxlint` (linter) + `oxfmt` (formatter with double quotes).
 - **Database & ORM:** SQLite (dev/test) / PostgreSQL (prod via Docker) via Prisma ORM.

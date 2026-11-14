@@ -11,7 +11,7 @@ Branchwork powers a multi-branch retail organization console:
 - **Branch-Level Scoping:** When a staff member logs in (e.g., Rafi Ahmed at Gulshan), `GET /api/products` automatically injects `WHERE branchId = user.branchId`. Staff can never see or organize inventory from other branches.
 - **RBAC Governance:** Only the Organization Owner can create branches, define roles, and create/delete product SKUs. Staff with the `organize_products` permission can only adjust stock, category, and branch assignment for products in their branch.
 
-Full C2 architecture diagrams, ERD, and contracts are documented in [`docs/architecture.md`](docs/architecture.md).  
+Full C2 architecture diagrams, ERD, and key architectural decisions (ADRs) are documented in [`docs/architecture.md`](docs/architecture.md).  
 Implementation roadmap and feature branches are tracked in [`docs/plan.md`](docs/plan.md).  
 Developer guidelines and invariants are defined in [`AGENTS.md`](AGENTS.md).
 
@@ -19,6 +19,7 @@ Developer guidelines and invariants are defined in [`AGENTS.md`](AGENTS.md).
 
 ## Tech Stack & Tooling
 
+- **Runtime:** Node.js 24+
 - **Framework:** [NestJS](https://nestjs.com/) (Modular architecture, Guards, Dependency Injection)
 - **Language:** TypeScript 5.7+ (Strict types, zero `any`)
 - **ORM & Database:** [Prisma](https://www.prisma.io/) with SQLite (zero-config local dev) and PostgreSQL (production via Docker)
@@ -29,6 +30,10 @@ Developer guidelines and invariants are defined in [`AGENTS.md`](AGENTS.md).
 ---
 
 ## 2-Minute Quickstart
+
+### Prerequisites
+- **Local Run:** Node.js 24+ (`npm` or `bun`)
+- **Containerized Run (Optional):** Docker or Podman with compose support
 
 ### Option A: Local Run (Fastest)
 
@@ -53,10 +58,14 @@ Once running:
 - **API Base:** `http://localhost:3000/api`
 - **Interactive Swagger UI:** `http://localhost:3000/api/docs`
 
-### Option B: Docker Compose (One-Command)
+### Option B: Containerized Run (Docker or Podman)
 
 ```bash
-docker compose up --build
+# Docker Compose:
+docker compose up --build   # or: npm run docker:up
+
+# Podman Compose:
+podman compose up --build
 ```
 Spins up PostgreSQL 16 and the NestJS API with database migrations and healthchecks automatically configured.
 
