@@ -5,6 +5,7 @@ import { CreateStaffDto } from "./dto/create-staff.dto";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { RolesGuard } from "../common/guards/roles.guard";
 import { RequirePermission } from "../common/decorators/require-permission.decorator";
+import { RequireOwner } from "../common/decorators/require-owner.decorator";
 import { CurrentUser } from "../common/decorators/current-user.decorator";
 import type { AuthenticatedUser } from "../auth/strategies/jwt.strategy";
 
@@ -31,14 +32,14 @@ export class StaffController {
   }
 
   @Post()
-  @RequirePermission("manage_staff")
+  @RequireOwner()
   @ApiOperation({
-    summary: "Invite or add a staff member (Owner or manage_staff)",
+    summary: "Invite or add a staff member (Owner only)",
   })
   @ApiResponse({ status: 201, description: "Staff member added successfully." })
   @ApiResponse({
     status: 403,
-    description: "Requires manage_staff permission or owner role.",
+    description: "Requires organization owner role.",
   })
   @ApiResponse({ status: 409, description: "Email is already registered." })
   async create(@CurrentUser() user: AuthenticatedUser, @Body() dto: CreateStaffDto) {
@@ -46,15 +47,15 @@ export class StaffController {
   }
 
   @Delete(":id")
-  @RequirePermission("manage_staff")
-  @ApiOperation({ summary: "Remove a staff member" })
+  @RequireOwner()
+  @ApiOperation({ summary: "Remove a staff member (Owner only)" })
   @ApiResponse({
     status: 200,
     description: "Staff member removed successfully.",
   })
   @ApiResponse({
     status: 403,
-    description: "Requires manage_staff permission or owner role.",
+    description: "Requires organization owner role.",
   })
   @ApiResponse({ status: 404, description: "Staff member not found." })
   async delete(@CurrentUser() user: AuthenticatedUser, @Param("id") id: string) {

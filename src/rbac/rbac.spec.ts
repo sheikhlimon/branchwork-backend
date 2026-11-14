@@ -9,6 +9,7 @@ import { AuthService } from "../auth/auth.service";
 import { BranchesService } from "../branches/branches.service";
 import { RolesService } from "../roles/roles.service";
 import { StaffService } from "../staff/staff.service";
+import { StaffController } from "../staff/staff.controller";
 import { RolesGuard } from "../common/guards/roles.guard";
 import { REQUIRE_OWNER_KEY } from "../common/decorators/require-owner.decorator";
 import { REQUIRE_PERMISSION_KEY } from "../common/decorators/require-permission.decorator";
@@ -221,6 +222,20 @@ describe("RBAC & Branch Scoping Test Suite", () => {
       const context = createMockContext(branchManagerUser, {});
       const allowed = await rolesGuard.canActivate(context);
       expect(allowed).toBe(true);
+    });
+
+    it("StaffController create and delete endpoints must be protected with @RequireOwner()", () => {
+      const isCreateOwnerOnly = reflector.get<boolean>(
+        REQUIRE_OWNER_KEY,
+        StaffController.prototype.create,
+      );
+      const isDeleteOwnerOnly = reflector.get<boolean>(
+        REQUIRE_OWNER_KEY,
+        StaffController.prototype.delete,
+      );
+
+      expect(isCreateOwnerOnly).toBe(true);
+      expect(isDeleteOwnerOnly).toBe(true);
     });
   });
 
