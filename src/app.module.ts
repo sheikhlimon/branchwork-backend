@@ -5,6 +5,7 @@ import { AuthModule } from "./auth/auth.module";
 import { BranchesModule } from "./branches/branches.module";
 import { RolesModule } from "./roles/roles.module";
 import { StaffModule } from "./staff/staff.module";
+import { ProductsModule } from "./products/products.module";
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { StaffModule } from "./staff/staff.module";
     BranchesModule,
     RolesModule,
     StaffModule,
+    ProductsModule,
   ],
   controllers: [],
   providers: [],
