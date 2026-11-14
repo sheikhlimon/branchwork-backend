@@ -47,7 +47,7 @@ export class BranchesService {
 
     if (branch._count.products > 0) {
       throw new ConflictException(
-        "Cannot delete branch with active products. Reassign or delete products first.",
+        `Cannot delete branch '${branch.name}'. It contains ${branch._count.products} active products. Reassign or delete products first.`,
       );
     }
 
