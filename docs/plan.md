@@ -1,67 +1,52 @@
 # Implementation Plan: Branchwork Backend
 
-This document outlines the step-by-step phased roadmap for developing the Branchwork multi-tenant backend API. Each phase maps directly to an isolated Git feature branch.
+Phased implementation roadmap for Branchwork. Each phase is developed on an isolated, short-named feature branch and merged into `main`.
 
 ---
 
-## Phase 0: Project Setup, Governance & ERD
+## Phase 0: Project Setup, Governance & ERD (`feat/setup`)
 - [x] Create repository structure and `.gitignore`
 - [x] Define C2 Container architecture and comprehensive ERD (`docs/architecture.md`)
-- [x] Author operational handbook and scoping invariants (`AGENTS.md`)
-- [x] Define phased execution plan (`docs/plan.md`)
-- [ ] Initialize `package.json`, `tsconfig.json`, and NestJS dependencies
-- [ ] Setup `.env.example` and core application bootstrap (`src/main.ts`, `src/app.module.ts`)
-- [ ] Merge `feat/project-setup-and-docs` into `main`
+- [x] Author operational handbook, Git rules, and scoping invariants (`AGENTS.md`)
+- [x] Setup `package.json`, `tsconfig.json`, `nest-cli.json`, and dependencies
+- [x] Configure Docker containerization (`Dockerfile`, `compose.yaml`)
+- [x] Setup application bootstrap with Swagger and ValidationPipe (`src/main.ts`, `src/app.module.ts`)
+- [x] Merge into `main`
 
-## Phase 1: Database Schema & Prisma Configuration (`feat/database-schema`)
-- [ ] Configure `prisma/schema.prisma` with SQLite provider (toggleable to PostgreSQL)
-- [ ] Model `Organization` entity
-- [ ] Model `Branch` entity with cascade on organization deletion
-- [ ] Model `Role` entity with JSON permissions list
-- [ ] Model `User` entity with `isOwner` flag, foreign keys to Branch and Role
-- [ ] Model `Product` entity with unique SKU, price, stock, category, and branch binding
-- [ ] Generate Prisma Client and run initial migration/push (`npx prisma db push`)
-- [ ] Create `PrismaService` and `PrismaModule` for dependency injection
-- [ ] Merge `feat/database-schema` into `main`
+## Phase 1: Database Schema & Prisma (`feat/db-schema`)
+- [ ] Configure `prisma/schema.prisma` with SQLite & PostgreSQL compatibility
+- [ ] Define models: `Organization`, `Branch`, `Role`, `User`, `Product`
+- [ ] Implement `PrismaService` and `PrismaModule`
+- [ ] Push schema to database (`npx prisma db push`)
+- [ ] Merge into `main`
 
-## Phase 2: Authentication & Organization Registration (`feat/auth-and-organization`)
+## Phase 2: Authentication & Multi-Tenancy (`feat/auth`)
 - [ ] Implement `RegisterOrgDto` and `LoginDto` with `class-validator`
-- [ ] Create `AuthService` with `bcrypt` password hashing
-- [ ] Implement `POST /api/auth/register-org` (atomic transaction: creates Org + Owner user)
-- [ ] Implement `POST /api/auth/login` (generates signed JWT with user claims)
-- [ ] Implement `JwtStrategy` and `JwtAuthGuard`
-- [ ] Implement `GET /api/auth/me` to return authenticated profile and permissions
-- [ ] Write integration test for registration and login
-- [ ] Merge `feat/auth-and-organization` into `main`
+- [ ] Create `AuthService` with `bcrypt` password hashing and JWT signing
+- [ ] Implement `POST /api/auth/register-org` (atomic transaction: Org + Owner)
+- [ ] Implement `POST /api/auth/login` (returns JWT with claims)
+- [ ] Implement `JwtAuthGuard` and `GET /api/auth/me`
+- [ ] Merge into `main`
 
-## Phase 3: Branches, Roles & Staff Management (`feat/branches-and-roles-rbac`)
-- [ ] Implement `RolesGuard` and `PermissionsGuard` with custom metadata decorators (`@RequireRole`, `@RequirePermission`)
-- [ ] Create `BranchesController` and `BranchesService` (CRUD for branches, Owner-only)
-- [ ] Create `RolesController` and `RolesService` (CRUD for roles & permission checklist)
-- [ ] Create `StaffController` and `StaffService` (invite/create staff assigned to branch and role)
-- [ ] Write test ensuring non-owners cannot create branches or assign roles
-- [ ] Merge `feat/branches-and-roles-rbac` into `main`
+## Phase 3: Branches, Roles & RBAC (`feat/rbac`)
+- [ ] Create `@Roles()` and `@Permissions()` decorators with `RolesGuard`
+- [ ] Implement Branch CRUD (`/api/branches`) — Owner only
+- [ ] Implement Role CRUD with permission checklists (`/api/roles`)
+- [ ] Implement Staff assignment (`/api/staff`)
+- [ ] Merge into `main`
 
-## Phase 4: Scoped Products & Inventory Management (`feat/products-and-inventory`)
-- [ ] Create `ProductsController` and `ProductsService`
-- [ ] Implement `POST /api/products` (Owner only: create product)
-- [ ] Implement `DELETE /api/products/:id` (Owner only: delete product)
-- [ ] Implement `GET /api/products` with automatic scoping:
-  - If `isOwner`: Return all products across all branches (support `?branchId=` and `?search=`)
-  - If Staff: Return ONLY products where `branchId == currentUser.branchId`
-- [ ] Implement `PATCH /api/products/:id/organize` (allows updating `category`, `stock`, `branchId` if caller has `organize_products` permission on their own branch product)
-- [ ] Write test verifying Staff cannot see other branches' products
-- [ ] Merge `feat/products-and-inventory` into `main`
+## Phase 4: Scoped Products & Inventory (`feat/products`)
+- [ ] Implement Product creation & deletion (Owner only)
+- [ ] Implement `GET /api/products` with automatic branch scoping:
+  - Owner: Sees all products across the organization
+  - Staff: Automatically scoped to `user.branchId`
+- [ ] Implement `PATCH /api/products/:id/organize` (Staff with `organize_products` permission)
+- [ ] Merge into `main`
 
-## Phase 5: Demo Seed Data, Swagger Docs & Verification (`feat/demo-seed-and-docs`)
-- [ ] Create `prisma/seed.ts` matching exact screenshots:
-  - Organization: **Padma Retail**
-  - Owner: **Nadia Rahman** (`nadia@demo.com` / `demo123`)
-  - Branches: **Dhanmondi**, **Gulshan**
-  - Roles: **Branch manager**, **Stock clerk**
-  - Staff: **Rafi Ahmed** (`rafi@demo.com` / `demo123` at Gulshan)
-  - Products: **Mustard oil 1L** (Dhanmondi), **Basmati rice 5kg** (Gulshan), **Steel flask** (Gulshan)
-- [ ] Configure `@nestjs/swagger` with OpenAPI interactive testing UI at `/api`
-- [ ] Final end-to-end verification of all endpoints via Swagger
-- [ ] Update `README.md` with 2-minute quickstart guide
-- [ ] Merge `feat/demo-seed-and-docs` into `main`
+## Phase 5: Demo Seed Data & Verification (`docs/seed-and-verify`)
+- [ ] Create `prisma/seed.ts` with demo accounts:
+  - Nadia Rahman (Owner) at Padma Retail
+  - Rafi Ahmed (Stock clerk) at Gulshan
+- [ ] Verify all endpoints via Swagger UI at `/api/docs`
+- [ ] Final `README.md` review and verification
+- [ ] Merge into `main`
