@@ -114,17 +114,46 @@ describe("ProductsService Branch Scoping & Inventory Test Suite", () => {
     expect(flask.branch.name).toBe("Gulshan");
   });
 
-  it("should reject creating product with duplicate SKU with ConflictException", async () => {
+  it("should reject creating product with duplicate SKU in same organization with ConflictException", async () => {
     await expect(
       productsService.create(orgId, {
         name: "Duplicate Mustard Oil",
-        sku: "TEST-OIL-001", // Duplicate SKU
+        sku: "TEST-OIL-001", // Duplicate SKU in same org
         category: "Grocery",
         price: 115.0,
         stock: 10,
         branchId: dhanmondiId,
       }),
     ).rejects.toThrow(ConflictException);
+  });
+
+  it("should allow distinct organizations to use the identical SKU", async () => {
+    // Setup a second tenant organization
+    const org2 = await prisma.organization.create({
+      data: { name: "Second Tenant Org" },
+    });
+    const branch2 = await prisma.branch.create({
+      data: { organizationId: org2.id, name: "Banani", city: "Dhaka" },
+    });
+
+    try {
+      const productOrg2 = await productsService.create(org2.id, {
+        name: "Tenant 2 Mustard Oil",
+        sku: "TEST-OIL-001", // Same SKU as in org 1!
+        category: "Grocery",
+        price: 115.0,
+        stock: 15,
+        branchId: branch2.id,
+      });
+
+      expect(productOrg2.id).toBeDefined();
+      expect(productOrg2.sku).toBe("TEST-OIL-001");
+      expect(productOrg2.organizationId).toBe(org2.id);
+    } finally {
+      await prisma.organization.deleteMany({
+        where: { id: org2.id },
+      });
+    }
   });
 
   describe("Branch Scoping Invariants (GET /api/products)", () => {

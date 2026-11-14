@@ -27,7 +27,12 @@ export class ProductsService {
     }
 
     const existingSku = await this.prisma.product.findUnique({
-      where: { sku: dto.sku.trim().toUpperCase() },
+      where: {
+        organizationId_sku: {
+          organizationId,
+          sku: dto.sku.trim().toUpperCase(),
+        },
+      },
     });
 
     if (existingSku) {
