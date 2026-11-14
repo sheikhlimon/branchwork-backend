@@ -1,8 +1,9 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { UnauthorizedException, ConflictException } from "@nestjs/common";
 import { JwtModule } from "@nestjs/jwt";
-import { ConfigModule } from "@nestjs/config";
+import { ConfigModule, ConfigService } from "@nestjs/config";
 import { AuthService } from "./auth.service";
+import { JwtStrategy } from "./strategies/jwt.strategy";
 import { PrismaModule } from "../prisma/prisma.module";
 import { PrismaService } from "../prisma/prisma.service";
 
@@ -119,6 +120,23 @@ describe("AuthService TDD Suite", () => {
     it("should throw UnauthorizedException if user ID does not exist", async () => {
       await expect(authService.getMe("non-existent-user-id")).rejects.toThrow(
         UnauthorizedException,
+      );
+    });
+  });
+
+  describe("JwtStrategy Security Invariants", () => {
+    it("should fail fast when JWT_SECRET is missing from configuration", () => {
+      const mockConfigService = {
+        getOrThrow: jest.fn().mockImplementation((key: string) => {
+          if (key === "JWT_SECRET") {
+            throw new Error('Configuration key "JWT_SECRET" does not exist');
+          }
+          return undefined;
+        }),
+      } as unknown as ConfigService;
+
+      expect(() => new JwtStrategy(mockConfigService)).toThrow(
+        'Configuration key "JWT_SECRET" does not exist',
       );
     });
   });
