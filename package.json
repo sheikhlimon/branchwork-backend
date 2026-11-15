@@ -22,6 +22,9 @@
     "seed": "tsx prisma/seed.ts",
     "docker:up": "docker compose up --build",
     "docker:down": "docker compose down",
+    "pretest": "node scripts/ensure-test-db.js",
+    "pretest:watch": "node scripts/ensure-test-db.js",
+    "pretest:cov": "node scripts/ensure-test-db.js",
     "test": "jest --runInBand",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage"
