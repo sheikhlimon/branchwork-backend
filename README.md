@@ -106,6 +106,17 @@ curl -X DELETE http://localhost:3000/api/products/<PRODUCT_ID> \
 ```
 *Returns **`403 Forbidden`** (Only owner can delete products).*
 
+## Automated Testing & Verifiability
+
+Branchwork features comprehensive integration test suites covering authentication, RBAC permissions, branch catalog leakage, branch deletion safeguards (`onDelete: Restrict`), and unique constraint validation.
+
+Tests execute against a live PostgreSQL 16 engine rather than mock adapters to guarantee true zero-mock verification of multi-tenant database invariants. The test runner is fully automated:
+
+```bash
+npm test
+```
+*The pre-test guard automatically verifies database connectivity, auto-starts the PostgreSQL container via Docker if stopped, and synchronizes the Prisma schema before Jest begins.*
+
 ## License
 
 This project is licensed under the [MIT License](LICENSE).

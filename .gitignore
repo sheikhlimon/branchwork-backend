@@ -30,6 +30,7 @@ wheels/
 .installed.cfg
 *.egg
 .env
+prisma/.env
 .venv
 venv/
 ENV/
