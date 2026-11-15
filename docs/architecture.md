@@ -10,10 +10,10 @@
 
 ```mermaid
 flowchart TD
-    Client["Single-Page Console / Frontend\n[HTML / JS App]"]
-    API["Branchwork Core API Service\n[REST Endpoints & Guards]"]
-    AuthGuard["RBAC & Tenant Scoping Guard\n[JWT Verification + Policy Engine]"]
-    DB[(Relational Database\n[PostgreSQL 16])]
+    Client["Single-Page Console / Frontend<br/>(HTML / JS App)"]
+    API["Branchwork Core API Service<br/>(REST Endpoints & Guards)"]
+    AuthGuard["RBAC & Tenant Scoping Guard<br/>(JWT Verification + Policy Engine)"]
+    DB[("Relational Database<br/>(PostgreSQL 16)")]
 
     Client -->|HTTP REST Requests with Bearer JWT| API
     API -->|1. Intercept & Validate Claims| AuthGuard
@@ -79,7 +79,7 @@ erDiagram
         string organization_id FK "References ORGANIZATION(id) ON DELETE CASCADE"
         string branch_id FK "References BRANCH(id) ON DELETE RESTRICT"
         string name "e.g. Mustard oil 1L, Basmati rice 5kg"
-        string sku "Tenant-scoped unique SKU: @@unique([organization_id, sku])"
+        string sku "Tenant-scoped unique SKU per organization"
         string category "e.g. Grocery, Home"
         decimal price "Product unit price"
         integer stock "Current inventory quantity"
