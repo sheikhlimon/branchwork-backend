@@ -116,12 +116,13 @@ async function waitForPort(host, port, maxWaitMs = 20000) {
 
 // 6. Detect compose command (docker compose or podman compose)
 function getComposeCommand() {
-  const dockerCheck = spawnSync("docker", ["compose", "version"], { stdio: "ignore" });
+  const isWin = process.platform === "win32";
+  const dockerCheck = spawnSync("docker", ["compose", "version"], { shell: isWin, stdio: "ignore" });
   if (dockerCheck.status === 0) {
     return ["docker", "compose"];
   }
 
-  const podmanCheck = spawnSync("podman", ["compose", "version"], { stdio: "ignore" });
+  const podmanCheck = spawnSync("podman", ["compose", "version"], { shell: isWin, stdio: "ignore" });
   if (podmanCheck.status === 0) {
     return ["podman", "compose"];
   }
@@ -162,8 +163,10 @@ async function main() {
   }
 
   console.log(`[Branchwork] Starting PostgreSQL container via ${composeCmd.join(" ")} up -d postgres...`);
+  const isWin = process.platform === "win32";
   const startResult = spawnSync(composeCmd[0], [...composeCmd.slice(1), "up", "-d", "postgres"], {
     cwd: ROOT_DIR,
+    shell: isWin,
     stdio: "inherit",
   });
 
