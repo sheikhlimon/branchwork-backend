@@ -88,19 +88,19 @@ Phased implementation roadmap for Branchwork. Each phase is developed on an isol
 ---
 
 ## Phase 7: Architecture Documentation & Streamlined README (`docs/streamline-and-adr`)
-- [ ] Update C2 Container diagram and ERD in `docs/architecture.md` to reflect `RefreshToken` and `Decimal(10, 2)`
-- [ ] Author Architecture Decision Records (ADRs) in `docs/architecture.md`:
-  - **ADR-004:** Exact Financial Precision with PostgreSQL `Decimal(10, 2)`
+- [x] Update C2 Container diagram and ERD in `docs/architecture.md` to reflect `RefreshToken` and `Decimal(10, 2)`
+- [x] Author Architecture Decision Records (ADRs) in `docs/architecture.md`:
+  - **ADR-004:** Decimal Precision for Currency (`Decimal(10, 2)`)
   - **ADR-005:** Version-Controlled Migrations & Deterministic Deployments (`prisma migrate deploy`)
   - **ADR-006:** Production Token Rotation & Session Revocation
   - **ADR-007:** IAM Delegation Ceilings & Pre-Delete Relation Aggregations
-- [ ] Streamline `README.md` (no horizontal rules `---`, no pedantic tool formatting trivia, no messy curl dumps):
+- [x] Streamline `README.md` (no horizontal rules `---`, no tool formatting trivia, no messy curl dumps):
   - Hero overview & Swagger link (`http://localhost:3000/api/docs`)
-  - Core architectural guarantees & security invariants upfront
+  - Core security & scoping rules upfront
   - 2-Minute Quickstart (`npx prisma migrate deploy` + `npm run seed`)
   - Pre-seeded evaluation credentials (Nadia Rahman & Rafi Ahmed)
   - Full API endpoint catalog table with access tiers
-  - Scoping & Permission Behavior Matrix (replacing raw curls with a clean invariant table)
+  - Scoping & Permission Behavior Matrix (replacing raw curls with a clean behavior table)
   - Automated test runner documentation (`npm test`)
-- [ ] Merge into `main`
+- [x] Merge into `main`
 

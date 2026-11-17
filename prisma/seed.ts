@@ -6,10 +6,15 @@ const prisma = new PrismaClient();
 async function main() {
   console.log("🌱 Seeding Branchwork demo data (Padma Retail)...");
 
-  // 1. Clean existing seed records if present
+  // 1. Clean existing seed records if present (or skip in production if already seeded)
   const existingOrg = await prisma.organization.findFirst({
     where: { name: "Padma Retail" },
   });
+
+  if (existingOrg && process.env.NODE_ENV === "production" && process.env.FORCE_SEED !== "true") {
+    console.log("🌱 Padma Retail demo data already exists. Skipping seed.");
+    return;
+  }
 
   if (existingOrg) {
     await prisma.organization.delete({

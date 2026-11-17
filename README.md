@@ -1,121 +1,140 @@
-# Branchwork Backend
+# Branchwork
 
-> Multi-tenant retail organization console backend with branch-scoped Role-Based Access Control (RBAC), built with **NestJS**, **TypeScript**, and **Prisma ORM**.
+Multi-tenant retail management API with branch-scoped access control, built with NestJS, TypeScript, PostgreSQL, and Prisma.
 
-## Architecture Overview
+## Core Security & Scoping Rules
 
-Branchwork powers a multi-branch retail organization console:
-- **Tenant Isolation:** Every data query enforces `organizationId` from the cryptographically verified JWT session. Organizations can never see each other's data.
-- **Branch-Level Scoping:** When a staff member logs in (e.g., Rafi Ahmed at Gulshan), `GET /api/products` automatically injects `WHERE branchId = user.branchId`. Staff can never see or organize inventory from other branches.
-- **RBAC Governance:** Only the Organization Owner can create branches, define roles, and create/delete product SKUs. Staff with the `organize_products` permission can only adjust stock, category, and branch assignment for products in their branch.
+Branchwork is built around four non-negotiable rules:
 
-Full C2 architecture diagrams, ERD, and key architectural decisions (ADRs) are documented in [`docs/architecture.md`](docs/architecture.md).  
-Implementation roadmap and feature branches are tracked in [`docs/plan.md`](docs/plan.md).  
-Developer guidelines and invariants are defined in [`AGENTS.md`](AGENTS.md).
+* **Tenant Isolation:** Every database query enforces the `organizationId` from the cryptographically verified JWT. One retail brand can never see or touch another brand's data.
+* **Branch-Level Scoping:** Store staff are strictly restricted to their assigned branch. For example, when Rafi logs in at the Gulshan branch, product queries automatically filter to Gulshan only.
+* **Role-Based Access Control:** Only organization owners can create branches, define roles, and add or delete product SKUs. Staff with the `organize_products` permission can only update stock, category, or branch assignment within their own branch.
+* **Safe Branch Deletion:** A branch cannot be deleted if active staff or products are still assigned to it (returns `409 Conflict`), preventing accidental data loss.
 
-## Tech Stack & Tooling
+For detailed architecture diagrams, ERDs, and design records, see [`docs/architecture.md`](docs/architecture.md).
 
-- **Runtime:** Node.js 24+
-- **Framework:** [NestJS](https://nestjs.com/) (Modular architecture, Guards, Dependency Injection)
-- **Language:** TypeScript 5.7+
-- **ORM & Database:** [Prisma](https://www.prisma.io/) with PostgreSQL 16 (via Docker / Podman or local service)
-- **Sub-Second Tooling:** [oxlint](https://oxc.rs/) (fast Rust linter) + [oxfmt](https://oxc.rs/) (double quotes formatting)
-- **Authentication:** Stateless JWT + `bcrypt` password hashing
-- **Documentation:** Interactive OpenAPI / Swagger UI at `/api/docs`
+## Tech Stack
 
-## 2-Minute Quickstart
+* **Framework:** [NestJS](https://nestjs.com/) (Node.js 24, TypeScript 5.7)
+* **Database & ORM:** PostgreSQL 16 with [Prisma ORM](https://www.prisma.io/)
+* **Authentication:** JWT with refresh token rotation and `bcrypt` password hashing
+* **Documentation:** Interactive OpenAPI / Swagger UI at `/api/docs`
 
-### Prerequisites
-- Node.js 24+ (`npm`)
-- Docker or Podman (for running PostgreSQL or the full container stack)
+## Quickstart
 
-### Option A: Local Run (Fastest)
+### Option A: Docker (Fastest / Zero Setup)
+
+Run the entire application stack (PostgreSQL + SQL migrations + seeded demo accounts + NestJS API) with one command:
 
 ```bash
-# 1. Install dependencies
+docker compose up --build
+```
+
+Once started:
+* **Interactive Swagger UI:** `http://localhost:3000/api/docs`
+* **API Base:** `http://localhost:3000/api`
+
+### Option B: Local Development
+
+For running tests and developing locally with hot reload:
+
+1. Install dependencies:
+```bash
 npm install
+```
 
-# 2. Configure environment
+2. Copy environment variables:
+```bash
 cp .env.example .env
+```
 
-# 3. Start PostgreSQL container
-docker compose up -d postgres   # or: podman compose up -d postgres
+3. Start PostgreSQL container:
+```bash
+docker compose up -d postgres
+```
 
-# 4. Push database schema & seed demo accounts
-npx prisma db push
+4. Apply database migrations and seed demo data:
+```bash
+npx prisma migrate deploy
 npm run seed
+```
 
-# 5. Run tests
-npm test
-
-# 6. Start development server
+5. Start the development server:
+```bash
 npm run start:dev
 ```
 
-Once running:
-- **API Base:** `http://localhost:3000/api`
-- **Interactive Swagger UI:** `http://localhost:3000/api/docs`
+## Demo Accounts
 
-### Option B: Containerized Run (Docker or Podman)
+The seed script creates a demo retail organization (**Padma Retail**) with two branches (**Gulshan** and **Dhanmondi**) and two demo users:
+
+| Role | Name | Email | Password | Assigned Branch | Access Level |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Owner** | Nadia Rahman | `nadia@demo.com` | `demo123` | *All Branches* | Full administrative access |
+| **Stock Clerk** | Rafi Ahmed | `rafi@demo.com` | `demo123` | **Gulshan** | `view_products`, `organize_products` (Gulshan only) |
+
+## API Endpoints
+
+All endpoints except authentication require a valid Bearer token in the `Authorization` header.
+
+### Authentication
+| Method | Endpoint | Access | Description |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/api/auth/register` | Public | Register a new organization and owner account |
+| `POST` | `/api/auth/login` | Public | Authenticate user, returns access token + refresh token |
+| `POST` | `/api/auth/refresh` | Public | Rotate refresh token and get a new access token |
+| `POST` | `/api/auth/logout` | Authenticated | Revoke refresh token and invalidate session |
+
+### Branches
+| Method | Endpoint | Access | Description |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/api/branches` | Owner / Staff | List all branches in the organization |
+| `POST` | `/api/branches` | Owner Only | Create a new store branch |
+| `DELETE` | `/api/branches/:id` | Owner Only | Delete branch (blocked if branch has staff or inventory) |
+
+### Products
+| Method | Endpoint | Access | Description |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/api/products` | Owner / Staff | List products (automatically scoped to branch for staff) |
+| `POST` | `/api/products` | Owner Only | Create a new product SKU |
+| `PATCH` | `/api/products/:id` | Owner / Staff | Update product (staff can only organize within own branch) |
+| `DELETE` | `/api/products/:id` | Owner Only | Permanently delete a product |
+
+### Staff & Roles
+| Method | Endpoint | Access | Description |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/api/roles` | Owner / Staff | List available roles and permissions |
+| `POST` | `/api/roles` | Owner Only | Create custom RBAC role with selected permissions |
+| `GET` | `/api/staff` | Owner / `manage_staff` | List staff members and branch assignments |
+| `POST` | `/api/staff` | Owner / `manage_staff` | Invite staff member (enforces IAM delegation ceiling) |
+| `DELETE` | `/api/staff/:id` | Owner Only | Remove staff member from organization |
+
+## Scoping & Permissions Behavior
+
+| User | Action | Result | Why |
+| :--- | :--- | :--- | :--- |
+| **Nadia (Owner)** | `GET /api/products` | Returns all products across Gulshan & Dhanmondi | Owners have organization-wide visibility |
+| **Rafi (Clerk)** | `GET /api/products` | Returns only Gulshan products | Branch scoping injects `branchId: Gulshan` filter |
+| **Rafi (Clerk)** | `PATCH /api/products/:gulshanId` | `200 OK` (updates category/stock) | Rafi has `organize_products` for his branch |
+| **Rafi (Clerk)** | `PATCH /api/products/:dhanmondiId`| `404 Not Found` | Cannot access or mutate another branch's inventory |
+| **Rafi (Clerk)** | `POST /api/products` | `403 Forbidden` | Only organization owners can create new SKUs |
+| **Rafi (Clerk)** | `DELETE /api/products/:id` | `403 Forbidden` | Only organization owners can delete SKUs |
+| **Nadia (Owner)** | `DELETE /api/branches/:gulshanId` | `409 Conflict` | Blocked because Gulshan has active staff and products |
+
+## Automated Verification
+
+All business rules, scoping constraints, and error scenarios are verified with automated tests running against PostgreSQL:
 
 ```bash
-# Docker Compose:
-docker compose up --build   # or: npm run docker:up
-
-# Podman Compose:
-podman compose up --build
-```
-Spins up PostgreSQL 16 and the NestJS API with database migrations and healthchecks automatically configured.
-
-## Demo Credentials (From Prototype Specification)
-
-| Role | Email | Password | Assigned Branch | Permissions |
-| :--- | :--- | :--- | :--- | :--- |
-| **Owner (Nadia Rahman)** | `nadia@demo.com` | `demo123` | *All Branches* | Superadmin (`*` wildcard) |
-| **Stock Clerk (Rafi Ahmed)** | `rafi@demo.com` | `demo123` | **Gulshan** | `view_products`, `organize_products` (Gulshan only) |
-
-## Testing Scoping via cURL
-
-### 1. Log in as Owner (Nadia)
-```bash
-curl -X POST http://localhost:3000/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email": "nadia@demo.com", "password": "demo123"}'
-```
-*Returns JWT access token for Nadia.*
-
-### 2. Log in as Staff (Rafi at Gulshan)
-```bash
-curl -X POST http://localhost:3000/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email": "rafi@demo.com", "password": "demo123"}'
-```
-*Returns JWT access token for Rafi.*
-
-### 3. Query Products as Staff (Branch Scoping in Action)
-```bash
-curl -X GET http://localhost:3000/api/products \
-  -H "Authorization: Bearer <RAFI_TOKEN>"
-```
-*Response contains **only Gulshan products** (Basmati rice 5kg, Steel flask). Mustard oil 1L (Dhanmondi) is never returned.*
-
-### 4. Staff Attempts to Delete a Product (RBAC Enforcement)
-```bash
-curl -X DELETE http://localhost:3000/api/products/<PRODUCT_ID> \
-  -H "Authorization: Bearer <RAFI_TOKEN>"
-```
-*Returns **`403 Forbidden`** (Only owner can delete products).*
-
-## Automated Testing & Verifiability
-
-Branchwork features comprehensive integration test suites covering authentication, RBAC permissions, branch catalog leakage, branch deletion safeguards (`onDelete: Restrict`), and unique constraint validation.
-
-Tests execute against a live PostgreSQL 16 engine rather than mock adapters to guarantee true zero-mock verification of multi-tenant database invariants. The test runner is fully automated:
-
-```bash
+# Run all unit and integration tests
 npm test
+
+# Type-check TypeScript without emitting JS
+npm run typecheck
+
+# Run linter
+npm run lint
 ```
-*The pre-test guard automatically verifies database connectivity, auto-starts the PostgreSQL container via Docker if stopped, and synchronizes the Prisma schema before Jest begins.*
 
 ## License
 
