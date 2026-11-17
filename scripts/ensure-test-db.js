@@ -141,7 +141,7 @@ function printFriendlyErrorBanner(host, port) {
   console.error("👉 To start the database container, run:");
   console.error("     docker compose up -d postgres   (or: podman compose up -d postgres)\n");
   console.error("   Then re-run tests with:");
-  console.error("     npm test");
+  console.error("     pnpm test");
   console.error("=".repeat(78) + "\n");
 }
 

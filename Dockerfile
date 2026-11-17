@@ -4,7 +4,7 @@ WORKDIR /app
 
 # Install dependencies needed for native modules (bcrypt)
 RUN apk add --no-cache python3 make g++
-RUN corepack enable
+RUN npm install -g pnpm@12.21.0
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile
@@ -23,7 +23,7 @@ FROM node:24-alpine AS runner
 WORKDIR /app
 
 RUN apk add --no-cache openssl
-RUN corepack enable
+RUN npm install -g pnpm@12.21.0
 
 COPY --from=builder /app/package.json ./
 COPY --from=builder /app/pnpm-lock.yaml ./

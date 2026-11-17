@@ -97,11 +97,11 @@ Phased implementation roadmap for Branchwork. Each phase is developed on an isol
 - [x] Streamline `README.md` (no horizontal rules `---`, no tool formatting trivia, no messy curl dumps):
   - Hero overview & Swagger link (`http://localhost:3000/api/docs`)
   - Core security & scoping rules upfront
-  - 2-Minute Quickstart (`npx prisma migrate deploy` + `npm run seed`)
+  - 2-Minute Quickstart (`pnpm prisma migrate deploy` + `pnpm run seed`)
   - Pre-seeded evaluation credentials (Nadia Rahman & Rafi Ahmed)
   - Full API endpoint catalog table with access tiers
   - Scoping & Permission Behavior Matrix (replacing raw curls with a clean behavior table)
-  - Automated test runner documentation (`npm test`)
+  - Automated test runner documentation (`pnpm test`)
 - [x] Merge into `main`
 
 ---

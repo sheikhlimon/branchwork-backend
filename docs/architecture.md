@@ -199,7 +199,7 @@ Configuration is strictly validated using NestJS `ConfigService`:
 
 ### C. Container Orchestration & Migrations
 * **PostgreSQL Container (`branchwork-postgres`):** Runs PostgreSQL 16 Alpine with persistent volume `pgdata`. Health check (`pg_isready -U postgres`) runs every 5 seconds.
-* **API Container (`branchwork-api`):** Multi-stage Docker build. On container boot, runs `npx prisma migrate deploy` non-interactively to safely apply version-controlled SQL migrations before starting the Node process.
+* **API Container (`branchwork-api`):** Multi-stage Docker build. On container boot, runs `pnpm prisma migrate deploy` non-interactively to safely apply version-controlled SQL migrations before starting the Node process.
 
 ---
 
