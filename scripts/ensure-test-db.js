@@ -185,7 +185,7 @@ async function main() {
 
   // Ensure Prisma migrations are deployed in the freshly started database
   try {
-    execSync("npx prisma migrate deploy", {
+    execSync("pnpm prisma migrate deploy", {
       cwd: ROOT_DIR,
       stdio: "pipe",
     });

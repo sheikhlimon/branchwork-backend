@@ -34,11 +34,14 @@ Once started:
 
 ### Option B: Local Development
 
-For local development and running tests:
+#### Prerequisites
+* Node.js 24+
+* pnpm 12+ (run `corepack enable` or `npm install -g pnpm@12`)
+* Docker (for PostgreSQL)
 
 1. Install dependencies:
 ```bash
-npm install
+pnpm install
 ```
 
 2. Copy environment variables:
@@ -53,13 +56,13 @@ docker compose up -d postgres
 
 4. Apply database migrations and seed demo data:
 ```bash
-npx prisma migrate deploy
-npm run seed
+pnpm prisma migrate deploy
+pnpm run seed
 ```
 
 5. Start the development server:
 ```bash
-npm run start:dev
+pnpm run start:dev
 ```
 
 ## Demo Accounts
@@ -125,13 +128,13 @@ Tests run against a live PostgreSQL database:
 
 ```bash
 # Run test suite
-npm test
+pnpm test
 
 # Type-check TypeScript
-npm run typecheck
+pnpm run typecheck
 
 # Run linter
-npm run lint
+pnpm run lint
 ```
 
 ## License

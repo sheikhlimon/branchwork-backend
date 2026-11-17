@@ -12,22 +12,22 @@ Operational guidelines and architectural rules for Branchwork Backend.
 ## 2. Essential Commands
 ```bash
 # Setup & Database
-npm install
-npx prisma generate
-npx prisma migrate deploy   # Apply migrations to database
-npm run prisma:migrate      # Create and apply schema changes in dev
-npm run seed               # Seed demo retail data
+pnpm install
+pnpm prisma generate
+pnpm prisma migrate deploy   # Apply migrations to database
+pnpm prisma:migrate          # Create and apply schema changes in dev
+pnpm run seed                # Seed demo retail data
 
 # Development & Verification
-npm run start:dev          # Start NestJS in watch mode
-npm run typecheck          # Verify TypeScript compilation (tsc --noEmit)
-npm run lint               # Run oxlint
-npm run format             # Format code with oxfmt
-npm test                   # Run automated Jest test suite
+pnpm run start:dev          # Start NestJS in watch mode
+pnpm run typecheck          # Verify TypeScript compilation (tsc --noEmit)
+pnpm run lint               # Run oxlint
+pnpm run format             # Format code with oxfmt
+pnpm test                   # Run automated Jest test suite
 
 # Containers
-npm run docker:up          # Start PostgreSQL & API container
-npm run docker:down        # Stop containers
+pnpm run docker:up          # Start PostgreSQL & API container
+pnpm run docker:down        # Stop containers
 ```
 
 ## 3. Architecture & Code Conventions
@@ -37,6 +37,6 @@ npm run docker:down        # Stop containers
 
 ## 4. Definition of Done (DoD)
 - Every endpoint has a validated DTO (`class-validator`).
-- TypeScript compiles cleanly with zero errors (`npm run typecheck`).
-- Linter passes with zero warnings or errors (`npm run lint`).
-- Automated tests pass against live PostgreSQL (`npm test`).
+- TypeScript compiles cleanly with zero errors (`pnpm run typecheck`).
+- Linter passes with zero warnings or errors (`pnpm run lint`).
+- Automated tests pass against live PostgreSQL (`pnpm test`).
