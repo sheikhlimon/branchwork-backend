@@ -24,6 +24,7 @@ pnpm run typecheck          # Verify TypeScript compilation (tsc --noEmit)
 pnpm run lint               # Run oxlint
 pnpm run format             # Format code with oxfmt
 pnpm test                   # Run automated Jest test suite
+pnpm jest <path-to-spec>    # Run a single test file during active dev
 
 # Containers
 pnpm run docker:up          # Start PostgreSQL & API container

@@ -104,3 +104,14 @@ Phased implementation roadmap for Branchwork. Each phase is developed on an isol
   - Automated test runner documentation (`npm test`)
 - [x] Merge into `main`
 
+---
+
+## Phase 8: Toolchain Modernization (`chore/migrate-to-pnpm`)
+- [x] Pin package manager to `pnpm@12.21.0` via `packageManager` and `engines`
+- [x] Configure workspace build script execution policies in `pnpm-workspace.yaml` (`allowBuilds`)
+- [x] Update `Dockerfile` to enable `corepack` and execute deterministic `--frozen-lockfile` builds
+- [x] Eliminate phantom dependency leakage in TypeScript modules
+- [x] Streamline operational handbook (`AGENTS.md`) and project quickstart (`README.md`)
+- [x] Verify full integration test suite (50 passing tests) and container build output
+- [x] Merge into `main`
+
