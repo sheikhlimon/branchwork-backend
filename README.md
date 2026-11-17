@@ -2,16 +2,14 @@
 
 Multi-tenant retail management API with branch-scoped access control, built with NestJS, TypeScript, PostgreSQL, and Prisma.
 
-## Core Security & Scoping Rules
+## Security & Scoping Rules
 
-Branchwork is built around four non-negotiable rules:
+* **Tenant Isolation:** Every query enforces `organizationId` from the verified JWT session. Tenants cannot access or modify foreign data.
+* **Branch Scoping:** Staff accounts are restricted to their assigned branch (e.g., product queries automatically filter to `branchId`).
+* **Role-Based Access:** Only owners can create branches, define roles, and add or delete product SKUs. Staff with `organize_products` can only update stock, category, and branch assignment for products in their branch.
+* **Safe Branch Deletion:** Branches with assigned staff or inventory cannot be deleted (returns `409 Conflict`).
 
-* **Tenant Isolation:** Every database query enforces the `organizationId` from the cryptographically verified JWT. One retail brand can never see or touch another brand's data.
-* **Branch-Level Scoping:** Store staff are strictly restricted to their assigned branch. For example, when Rafi logs in at the Gulshan branch, product queries automatically filter to Gulshan only.
-* **Role-Based Access Control:** Only organization owners can create branches, define roles, and add or delete product SKUs. Staff with the `organize_products` permission can only update stock, category, or branch assignment within their own branch.
-* **Safe Branch Deletion:** A branch cannot be deleted if active staff or products are still assigned to it (returns `409 Conflict`), preventing accidental data loss.
-
-For detailed architecture diagrams, ERDs, and design records, see [`docs/architecture.md`](docs/architecture.md).
+Architecture diagrams, ERD, and decision records are documented in [`docs/architecture.md`](docs/architecture.md).
 
 ## Tech Stack
 
@@ -22,21 +20,21 @@ For detailed architecture diagrams, ERDs, and design records, see [`docs/archite
 
 ## Quickstart
 
-### Option A: Docker (Fastest / Zero Setup)
+### Option A: Docker (Zero Setup)
 
-Run the entire application stack (PostgreSQL + SQL migrations + seeded demo accounts + NestJS API) with one command:
+Run PostgreSQL, migrations, demo data seeding, and the API with one command:
 
 ```bash
 docker compose up --build
 ```
 
 Once started:
-* **Interactive Swagger UI:** `http://localhost:3000/api/docs`
+* **Swagger UI:** `http://localhost:3000/api/docs`
 * **API Base:** `http://localhost:3000/api`
 
 ### Option B: Local Development
 
-For running tests and developing locally with hot reload:
+For local development and running tests:
 
 1. Install dependencies:
 ```bash
@@ -123,13 +121,13 @@ All endpoints except authentication require a valid Bearer token in the `Authori
 
 ## Automated Verification
 
-All business rules, scoping constraints, and error scenarios are verified with automated tests running against PostgreSQL:
+Tests run against a live PostgreSQL database:
 
 ```bash
-# Run all unit and integration tests
+# Run test suite
 npm test
 
-# Type-check TypeScript without emitting JS
+# Type-check TypeScript
 npm run typecheck
 
 # Run linter

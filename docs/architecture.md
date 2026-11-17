@@ -91,7 +91,7 @@ erDiagram
         string name "e.g. Mustard oil 1L, Basmati rice 5kg"
         string sku "Tenant-scoped unique SKU per organization"
         string category "e.g. Grocery, Home"
-        decimal price "Arbitrary-precision Decimal(10, 2)"
+        decimal price "Decimal(10, 2)"
         integer stock "Current inventory quantity"
         datetime created_at
         datetime updated_at
@@ -105,7 +105,7 @@ erDiagram
 ### A. Organization Isolation (Tenant Boundary)
 Every table (`BRANCH`, `ROLE`, `USER`, `PRODUCT`) maintains an explicit `organization_id` foreign key.
 * **Strict Tenant Context:** An API request can **NEVER** read or modify records where `organization_id != currentUser.organization_id`.
-* The `organization_id` is extracted directly from the verified cryptographic JWT payload—never trusted from query params or client body.
+* The `organization_id` is extracted directly from the verified cryptographic JWT payload (never trusted from query params or request bodies).
 * **Tenant-Scoped SKU Uniqueness:** Product SKUs are unique per organization (`@@unique([organizationId, sku])`), not globally. This prevents cross-tenant collisions and enables distinct retail tenants to use standard vendor barcodes (e.g., both Tenant A and Tenant B can stock `OIL-001` without collision, but Tenant A cannot duplicate it).
 
 ### B. Branch-Level Scoping (Staff Restriction)
@@ -153,19 +153,19 @@ Every table (`BRANCH`, `ROLE`, `USER`, `PRODUCT`) maintains an explicit `organiz
   * **Returns:** Current session profile with active permissions and branch assignment.
 
 ### 2. Branches (Owner Only)
-* `GET /api/branches` — List all branches in the organization (with user and product counts).
-* `POST /api/branches` — Create a new branch `{ name, city }`.
-* `DELETE /api/branches/:id` — Delete branch. Verifies active staff and product counts via `_count` aggregation and throws `409 Conflict` if dependencies exist (`Cannot delete branch '...'. It contains X staff member(s) and Y active product(s)`), preventing unhandled PostgreSQL foreign key errors.
+* `GET /api/branches`: List all branches in the organization (with user and product counts).
+* `POST /api/branches`: Create a new branch `{ name, city }`.
+* `DELETE /api/branches/:id`: Delete branch. Verifies active staff and product counts via `_count` aggregation and returns `409 Conflict` if dependencies exist, preventing accidental data loss.
 
 ### 3. Roles & Permissions (Owner Only)
-* `GET /api/roles` — List roles with their permission checklists and staff counts.
-* `POST /api/roles` — Create custom role `{ name, description, permissions: [...] }`.
-* `DELETE /api/roles/:id` — Delete role.
+* `GET /api/roles`: List roles with permission checklists and staff counts.
+* `POST /api/roles`: Create custom role `{ name, description, permissions: [...] }`.
+* `DELETE /api/roles/:id`: Delete role.
 
 ### 4. Staff Management
-* `GET /api/staff` (Owner or Staff with `manage_staff`) — List staff members (with assigned branch and role).
-* `POST /api/staff` (Owner or Staff with `manage_staff`) — Invite/add staff `{ name, email, password, branchId, roleId }`. Enforces delegation ceiling check.
-* `DELETE /api/staff/:id` (Owner Only) — Remove staff member.
+* `GET /api/staff` (Owner or Staff with `manage_staff`): List staff members (with assigned branch and role).
+* `POST /api/staff` (Owner or Staff with `manage_staff`): Invite staff `{ name, email, password, branchId, roleId }`. Enforces delegation ceiling check.
+* `DELETE /api/staff/:id` (Owner Only): Remove staff member.
 
 ### 5. Products & Inventory
 * `GET /api/products`
@@ -183,16 +183,16 @@ Every table (`BRANCH`, `ROLE`, `USER`, `PRODUCT`) maintains an explicit `organiz
 
 ## 6. Security, JWT & Configuration Architecture
 
-### A. Production-Grade JWT & Session Rotation
-Authentication uses a dual-token lifecycle conforming to OAuth 2.0 / RFC 6749 best practices:
-* **Access Tokens:** Short-lived (15 minutes), stateless HMAC-SHA256 tokens carrying validated claims (`organizationId`, `branchId`, `isOwner`, `permissions`).
-* **Refresh Tokens:** Long-lived (7 days), cryptographically random 40-byte hex strings. Stored in PostgreSQL as SHA-256 hashes (`tokenHash`) to prevent credential leakage in the event of database dumps.
+### A. Token Lifecycle & Session Management
+Authentication uses a dual-token strategy:
+* **Access Tokens:** Short-lived (15 minutes) HMAC-SHA256 tokens carrying claims (`organizationId`, `branchId`, `isOwner`, `permissions`).
+* **Refresh Tokens:** Long-lived (7 days), cryptographically random 40-byte hex strings stored in PostgreSQL as SHA-256 hashes (`tokenHash`).
 * **Token Reuse Detection:** If an already-revoked refresh token is presented, the system detects potential token theft and immediately revokes all active refresh sessions for that user.
 
 ### B. Environment Configuration & Secrets Management
 Configuration is strictly validated using NestJS `ConfigService`:
-* `JWT_SECRET`: Mandatory secret key loaded via `configService.getOrThrow<string>("JWT_SECRET")`. Fails fast on application boot if unset; zero hardcoded fallback secrets in application code.
-* `JWT_EXPIRES_IN`: Token lifespan dynamically parsed from environment (defaults to `"15m"`).
+* `JWT_SECRET`: Secret key loaded via `configService.getOrThrow<string>("JWT_SECRET")`. Fails fast on application boot if unset; zero hardcoded fallback secrets in application code.
+* `JWT_EXPIRES_IN`: Token lifespan parsed from environment (defaults to `"15m"`).
 * `DATABASE_URL`: PostgreSQL connection string with schema scoping (`schema=public`).
 * `PORT`: HTTP server port (defaults to `3000`).
 * `NODE_ENV`: Runtime mode (`development`, `production`, `test`).
