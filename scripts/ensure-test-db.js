@@ -183,15 +183,15 @@ async function main() {
     process.exit(1);
   }
 
-  // Ensure Prisma tables exist in the freshly started database
+  // Ensure Prisma migrations are deployed in the freshly started database
   try {
-    execSync("npx prisma db push --skip-generate", {
+    execSync("npx prisma migrate deploy", {
       cwd: ROOT_DIR,
       stdio: "pipe",
     });
-    console.log("[Branchwork] ✅ PostgreSQL is ready and schema is synchronized. Starting tests...\n");
-  } catch (pushErr) {
-    console.warn(`[Branchwork] Warning: Schema push returned a notice (${pushErr.message}). Starting tests...\n`);
+    console.log("[Branchwork] ✅ PostgreSQL is ready and migrations are deployed. Starting tests...\n");
+  } catch (deployErr) {
+    console.warn(`[Branchwork] Warning: Migration deploy returned a notice (${deployErr.message}). Starting tests...\n`);
   }
 }
 

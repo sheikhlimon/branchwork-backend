@@ -62,3 +62,45 @@ Phased implementation roadmap for Branchwork. Each phase is developed on an isol
 - [x] `oxlint` (0 errors, 0 warnings) and `oxfmt` (double quotes) verified
 - [x] Update `README.md` with 2-minute reviewer quickstart and curl testing commands
 - [x] Merge into `main`
+
+---
+
+## Phase 6: Migrations, Precision & Production Auth (`feat/migrations-and-precision`)
+- [x] Upgrade `price Float` to `price Decimal @db.Decimal(10, 2)` in `prisma/schema.prisma`
+- [x] Add `RefreshToken` model with `tokenHash`, `userId`, `expiresAt`, `revokedAt` in `prisma/schema.prisma`
+- [x] Generate baseline database migration: `prisma/migrations/20261117_init/migration.sql`
+- [x] Update `Dockerfile` to deploy migrations deterministically (`npx prisma migrate deploy && node dist/main`)
+- [x] Implement production token rotation in `AuthService`:
+  - Short-lived Access Token (15m) + Long-lived Refresh Token (7d)
+  - `POST /api/auth/refresh` with token rotation and reuse detection
+  - `POST /api/auth/logout` with session revocation
+- [x] Implement `Decimal` price serialization to clean numbers in `ProductsService`
+- [x] Implement relation aggregation check (`_count: { users: true, products: true }`) in `BranchesService`
+- [x] Implement IAM delegation bounds (`assertCanAssignRole`) in `StaffService`
+- [x] Expand automated test suite in `auth.spec.ts`, `products.spec.ts`, and `rbac.spec.ts`:
+  - Token refresh, rotation, logout revocation, and reuse rejection
+  - Exact currency decimal precision (no IEEE 754 drift)
+  - Pre-delete branch conflict checks (`409 Conflict`)
+  - Subordinate privilege escalation protection (`403 Forbidden`)
+- [x] Verify `npm test` passes 100% and `npm run lint` has 0 errors
+- [ ] Merge into `main`
+
+---
+
+## Phase 7: Architecture Documentation & Streamlined README (`docs/streamline-and-adr`)
+- [ ] Update C2 Container diagram and ERD in `docs/architecture.md` to reflect `RefreshToken` and `Decimal(10, 2)`
+- [ ] Author Architecture Decision Records (ADRs) in `docs/architecture.md`:
+  - **ADR-004:** Exact Financial Precision with PostgreSQL `Decimal(10, 2)`
+  - **ADR-005:** Version-Controlled Migrations & Deterministic Deployments (`prisma migrate deploy`)
+  - **ADR-006:** Production Token Rotation & Session Revocation
+  - **ADR-007:** IAM Delegation Ceilings & Pre-Delete Relation Aggregations
+- [ ] Streamline `README.md` (no horizontal rules `---`, no pedantic tool formatting trivia, no messy curl dumps):
+  - Hero overview & Swagger link (`http://localhost:3000/api/docs`)
+  - Core architectural guarantees & security invariants upfront
+  - 2-Minute Quickstart (`npx prisma migrate deploy` + `npm run seed`)
+  - Pre-seeded evaluation credentials (Nadia Rahman & Rafi Ahmed)
+  - Full API endpoint catalog table with access tiers
+  - Scoping & Permission Behavior Matrix (replacing raw curls with a clean invariant table)
+  - Automated test runner documentation (`npm test`)
+- [ ] Merge into `main`
+

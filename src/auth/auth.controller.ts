@@ -3,6 +3,7 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from "@nestjs/swagg
 import { AuthService } from "./auth.service";
 import { RegisterOrgDto } from "./dto/register-org.dto";
 import { LoginDto } from "./dto/login.dto";
+import { RefreshTokenDto } from "./dto/refresh-token.dto";
 import { JwtAuthGuard } from "./guards/jwt-auth.guard";
 import { CurrentUser } from "../common/decorators/current-user.decorator";
 import type { AuthenticatedUser } from "./strategies/jwt.strategy";
@@ -18,7 +19,7 @@ export class AuthController {
   })
   @ApiResponse({
     status: 201,
-    description: "Organization registered successfully with JWT session.",
+    description: "Organization registered successfully with JWT session and refresh token.",
   })
   @ApiResponse({
     status: 409,
@@ -33,7 +34,7 @@ export class AuthController {
   @ApiOperation({ summary: "Log in with email and password" })
   @ApiResponse({
     status: 200,
-    description: "Authenticated successfully. Returns access token and scoped profile.",
+    description: "Authenticated successfully. Returns access token, refresh token, and scoped profile.",
   })
   @ApiResponse({
     status: 401,
@@ -41,6 +42,32 @@ export class AuthController {
   })
   async login(@Body() dto: LoginDto) {
     return this.authService.login(dto);
+  }
+
+  @Post("refresh")
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: "Rotate tokens and issue new access & refresh token pair" })
+  @ApiResponse({
+    status: 200,
+    description: "Token rotated successfully. Returns fresh token pair.",
+  })
+  @ApiResponse({
+    status: 401,
+    description: "Invalid, expired, or revoked refresh token.",
+  })
+  async refresh(@Body() dto: RefreshTokenDto) {
+    return this.authService.refresh(dto);
+  }
+
+  @Post("logout")
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: "Revoke refresh token and terminate active session" })
+  @ApiResponse({
+    status: 200,
+    description: "Session revoked successfully.",
+  })
+  async logout(@Body() dto: RefreshTokenDto) {
+    return this.authService.logout(dto);
   }
 
   @Get("me")

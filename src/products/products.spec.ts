@@ -114,6 +114,20 @@ describe("ProductsService Branch Scoping & Inventory Test Suite", () => {
     expect(flask.branch.name).toBe("Gulshan");
   });
 
+  it("should preserve exact decimal precision without binary floating point drift", async () => {
+    const decimalProduct = await productsService.create(orgId, {
+      name: "Gourmet Saffron 10g",
+      sku: "TEST-SAF-001",
+      category: "Grocery",
+      price: 499.55,
+      stock: 10,
+      branchId: dhanmondiId,
+    });
+
+    expect(Number(decimalProduct.price)).toBe(499.55);
+    await productsService.delete(orgId, decimalProduct.id);
+  });
+
   it("should reject creating product with duplicate SKU in same organization with ConflictException", async () => {
     await expect(
       productsService.create(orgId, {

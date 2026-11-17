@@ -32,18 +32,18 @@ export class StaffController {
   }
 
   @Post()
-  @RequireOwner()
+  @RequirePermission("manage_staff")
   @ApiOperation({
-    summary: "Invite or add a staff member (Owner only)",
+    summary: "Invite or add a staff member (Requires manage_staff permission or Owner)",
   })
   @ApiResponse({ status: 201, description: "Staff member added successfully." })
   @ApiResponse({
     status: 403,
-    description: "Requires organization owner role.",
+    description: "Requires manage_staff permission, owner role, and valid delegation clearance.",
   })
   @ApiResponse({ status: 409, description: "Email is already registered." })
   async create(@CurrentUser() user: AuthenticatedUser, @Body() dto: CreateStaffDto) {
-    return this.staffService.create(user.organizationId, dto);
+    return this.staffService.create(user.organizationId, dto, user);
   }
 
   @Delete(":id")

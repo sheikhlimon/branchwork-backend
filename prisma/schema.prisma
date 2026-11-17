@@ -70,8 +70,23 @@ model User {
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   branch         Branch?      @relation(fields: [branchId], references: [id], onDelete: SetNull)
   role           Role?        @relation(fields: [roleId], references: [id], onDelete: SetNull)
+  refreshTokens  RefreshToken[]
 
   @@map("users")
+}
+
+model RefreshToken {
+  id        String    @id @default(cuid())
+  tokenHash String    @unique
+  userId    String
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("refresh_tokens")
 }
 
 model Product {
@@ -81,7 +96,7 @@ model Product {
   name           String
   sku            String
   category       String
-  price          Float
+  price          Decimal      @db.Decimal(10, 2)
   stock          Int          @default(0)
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt

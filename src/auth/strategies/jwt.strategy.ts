@@ -12,6 +12,7 @@ export interface AuthenticatedUser {
   roleId: string | null;
   roleName: string | null;
   isOwner: boolean;
+  permissions?: string[];
 }
 
 @Injectable()
@@ -36,6 +37,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       roleId: payload.roleId || null,
       roleName: payload.roleName || null,
       isOwner: payload.isOwner,
+      permissions: payload.permissions || (payload.isOwner ? ["*"] : []),
     };
   }
 }

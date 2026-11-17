@@ -53,6 +53,8 @@ describe("AuthService TDD Suite", () => {
       expect(result).toBeDefined();
       expect(result.accessToken).toBeDefined();
       expect(typeof result.accessToken).toBe("string");
+      expect(result.refreshToken).toBeDefined();
+      expect(typeof result.refreshToken).toBe("string");
       expect(result.user).toBeDefined();
       expect(result.user.email).toBe("nadia.test@demo.com");
       expect(result.user.name).toBe("Nadia Rahman");
@@ -83,6 +85,7 @@ describe("AuthService TDD Suite", () => {
       });
 
       expect(result.accessToken).toBeDefined();
+      expect(result.refreshToken).toBeDefined();
       expect(result.user.email).toBe("nadia.test@demo.com");
       expect(result.user.isOwner).toBe(true);
     });
@@ -154,6 +157,76 @@ describe("AuthService TDD Suite", () => {
 
       const expiresIn = mockConfigService.get<string>("JWT_EXPIRES_IN") || "1d";
       expect(expiresIn).toBe("7d");
+    });
+  });
+
+  describe("Refresh Token Rotation & Session Revocation", () => {
+    let activeRefreshToken: string;
+
+    it("should successfully rotate tokens with a valid refresh token", async () => {
+      const loginRes = await authService.login({
+        email: "nadia.test@demo.com",
+        password: "demo123password",
+      });
+
+      activeRefreshToken = loginRes.refreshToken;
+
+      const refreshRes = await authService.refresh({
+        refreshToken: activeRefreshToken,
+      });
+
+      expect(refreshRes.accessToken).toBeDefined();
+      expect(refreshRes.refreshToken).toBeDefined();
+      // Verifies token rotation: the new token must not match the old token
+      expect(refreshRes.refreshToken).not.toBe(activeRefreshToken);
+      expect(refreshRes.user.email).toBe("nadia.test@demo.com");
+
+      // Update to point to the newly issued refresh token
+      activeRefreshToken = refreshRes.refreshToken;
+    });
+
+    it("should detect token reuse and reject an already-revoked refresh token", async () => {
+      // Re-submitting the old rotated token must trigger reuse detection
+      await expect(
+        authService.refresh({
+          refreshToken: activeRefreshToken, // Refresh it once
+        }),
+      ).resolves.toBeDefined();
+
+      // Now attempting to re-use the exact same token again must fail
+      await expect(
+        authService.refresh({
+          refreshToken: activeRefreshToken,
+        }),
+      ).rejects.toThrow(UnauthorizedException);
+    });
+
+    it("should reject an invalid or malformed refresh token", async () => {
+      await expect(
+        authService.refresh({
+          refreshToken: "fake_non_existent_token_12345",
+        }),
+      ).rejects.toThrow(UnauthorizedException);
+    });
+
+    it("should successfully revoke a refresh token on logout", async () => {
+      const loginRes = await authService.login({
+        email: "nadia.test@demo.com",
+        password: "demo123password",
+      });
+
+      const logoutRes = await authService.logout({
+        refreshToken: loginRes.refreshToken,
+      });
+
+      expect(logoutRes.message).toBe("Logged out successfully");
+
+      // Attempting to refresh with the logged-out token must fail
+      await expect(
+        authService.refresh({
+          refreshToken: loginRes.refreshToken,
+        }),
+      ).rejects.toThrow(UnauthorizedException);
     });
   });
 });

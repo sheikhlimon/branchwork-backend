@@ -224,9 +224,9 @@ describe("RBAC & Branch Scoping Test Suite", () => {
       expect(allowed).toBe(true);
     });
 
-    it("StaffController create and delete endpoints must be protected with @RequireOwner()", () => {
-      const isCreateOwnerOnly = reflector.get<boolean>(
-        REQUIRE_OWNER_KEY,
+    it("StaffController create requires manage_staff and delete is protected with @RequireOwner()", () => {
+      const createPermission = reflector.get<string>(
+        REQUIRE_PERMISSION_KEY,
         StaffController.prototype.create,
       );
       const isDeleteOwnerOnly = reflector.get<boolean>(
@@ -234,12 +234,42 @@ describe("RBAC & Branch Scoping Test Suite", () => {
         StaffController.prototype.delete,
       );
 
-      expect(isCreateOwnerOnly).toBe(true);
+      expect(createPermission).toBe("manage_staff");
       expect(isDeleteOwnerOnly).toBe(true);
+    });
+
+    it("should prevent non-owner managers from assigning roles with permissions exceeding their own", async () => {
+      // Manager Karim only has permissions: ["manage_staff", "view_products"] (lacks "organize_products")
+      const limitedManager: AuthenticatedUser = {
+        ...branchManagerUser,
+        permissions: ["manage_staff", "view_products"],
+      };
+
+      // Target role has "organize_products", which Karim does not possess
+      await expect(
+        staffService.create(
+          orgId,
+          {
+            name: "Subordinate Staff",
+            email: "subordinate@demo.com",
+            password: "demo123password",
+            branchId: dhanmondiBranchId,
+            roleId: stockClerkRoleId, // has ["view_products", "organize_products"]
+          },
+          limitedManager,
+        ),
+      ).rejects.toThrow(ForbiddenException);
     });
   });
 
   describe("Branch Deletion Invariants", () => {
+    it("should reject deleting a branch that contains active staff members with ConflictException", async () => {
+      // Gulshan branch currently contains staff member Rafi Ahmed
+      await expect(branchesService.delete(orgId, gulshanBranchId)).rejects.toThrow(
+        ConflictException,
+      );
+    });
+
     it("should reject deleting a branch that contains active products with ConflictException", async () => {
       // Create a test product inside Dhanmondi branch
       await prisma.product.create({

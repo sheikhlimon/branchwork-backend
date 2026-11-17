@@ -1,7 +1,8 @@
-import { Injectable, NotFoundException, ConflictException } from "@nestjs/common";
+import { Injectable, NotFoundException, ConflictException, ForbiddenException } from "@nestjs/common";
 import * as bcrypt from "bcrypt";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateStaffDto } from "./dto/create-staff.dto";
+import type { AuthenticatedUser } from "../auth/strategies/jwt.strategy";
 
 @Injectable()
 export class StaffService {
@@ -32,7 +33,11 @@ export class StaffService {
     });
   }
 
-  async create(organizationId: string, dto: CreateStaffDto) {
+  /**
+   * Creates a new staff account bound to a branch and role.
+   * Enforces IAM delegation ceilings: non-owners cannot assign permissions they do not possess.
+   */
+  async create(organizationId: string, dto: CreateStaffDto, actor?: AuthenticatedUser) {
     const existing = await this.prisma.user.findUnique({
       where: { email: dto.email.toLowerCase().trim() },
     });
@@ -55,6 +60,30 @@ export class StaffService {
     });
     if (!role) {
       throw new NotFoundException("Role not found in this organization");
+    }
+
+    // Privilege Escalation Defense:
+    // If the actor is not the owner, verify they hold all permissions assigned to the target role.
+    if (actor && !actor.isOwner) {
+      const targetPermissions: string[] = JSON.parse(role.permissions || "[]");
+      let actorPermissions = actor.permissions;
+      if (!actorPermissions && actor.roleId) {
+        const actorRole = await this.prisma.role.findUnique({
+          where: { id: actor.roleId },
+        });
+        actorPermissions = actorRole ? JSON.parse(actorRole.permissions || "[]") : [];
+      }
+      actorPermissions = actorPermissions || [];
+
+      const hasDelegationClearance = targetPermissions.every((perm) =>
+        actorPermissions!.includes(perm),
+      );
+
+      if (!hasDelegationClearance) {
+        throw new ForbiddenException(
+          "You cannot assign a role with permissions exceeding your own",
+        );
+      }
     }
 
     const passwordHash = await bcrypt.hash(dto.password, 10);

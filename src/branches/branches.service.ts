@@ -36,7 +36,10 @@ export class BranchesService {
       where: { id: branchId, organizationId },
       include: {
         _count: {
-          select: { products: true },
+          select: {
+            users: true,
+            products: true,
+          },
         },
       },
     });
@@ -45,9 +48,9 @@ export class BranchesService {
       throw new NotFoundException("Branch not found");
     }
 
-    if (branch._count.products > 0) {
+    if (branch._count.users > 0 || branch._count.products > 0) {
       throw new ConflictException(
-        `Cannot delete branch '${branch.name}'. It contains ${branch._count.products} active products. Reassign or delete products first.`,
+        `Cannot delete branch '${branch.name}'. It contains ${branch._count.users} staff member(s) and ${branch._count.products} active product(s). Reassign them first.`,
       );
     }
 
