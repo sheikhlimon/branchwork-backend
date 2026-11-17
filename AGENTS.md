@@ -16,7 +16,8 @@ Operational guidelines and architectural rules for Branchwork Backend.
 # Dependencies & Setup
 npm install
 npx prisma generate
-npx prisma migrate deploy
+npx prisma migrate deploy   # Apply migrations
+npm run prisma:migrate      # Create and apply schema changes in dev
 
 # Development & Testing
 npm run start:dev          # Start NestJS in watch mode

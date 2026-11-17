@@ -131,6 +131,7 @@ export class AuthService {
       branchId: user.branchId,
       roleId: user.roleId,
       isOwner: user.isOwner,
+      permissions: ["*"],
     };
 
     const accessToken = this.jwtService.sign(payload);
@@ -171,6 +172,12 @@ export class AuthService {
       throw new UnauthorizedException("Invalid email or password");
     }
 
+    const permissions: string[] = user.isOwner
+      ? ["*"]
+      : user.role?.permissions
+        ? JSON.parse(user.role.permissions)
+        : [];
+
     const payload: JwtPayload = {
       sub: user.id,
       email: user.email,
@@ -179,6 +186,7 @@ export class AuthService {
       roleId: user.roleId,
       roleName: user.role?.name || null,
       isOwner: user.isOwner,
+      permissions,
     };
 
     const accessToken = this.jwtService.sign(payload);
@@ -230,13 +238,28 @@ export class AuthService {
       throw new UnauthorizedException("Refresh token has expired");
     }
 
-    // Atomically rotate: revoke the used refresh token and issue a new one
-    await this.prisma.refreshToken.update({
-      where: { id: storedToken.id },
+    // Atomically rotate: revoke the used refresh token only if not already revoked (prevents concurrent race conditions)
+    const rotationResult = await this.prisma.refreshToken.updateMany({
+      where: { id: storedToken.id, revokedAt: null },
       data: { revokedAt: new Date() },
     });
 
+    if (rotationResult.count === 0) {
+      // Another concurrent request already rotated/revoked this token; trigger reuse protection
+      await this.prisma.refreshToken.updateMany({
+        where: { userId: storedToken.userId, revokedAt: null },
+        data: { revokedAt: new Date() },
+      });
+      throw new UnauthorizedException("Revoked refresh token presented. All active sessions have been invalidated.");
+    }
+
     const user = storedToken.user;
+    const permissions: string[] = user.isOwner
+      ? ["*"]
+      : user.role?.permissions
+        ? JSON.parse(user.role.permissions)
+        : [];
+
     const payload: JwtPayload = {
       sub: user.id,
       email: user.email,
@@ -245,6 +268,7 @@ export class AuthService {
       roleId: user.roleId,
       roleName: user.role?.name || null,
       isOwner: user.isOwner,
+      permissions,
     };
 
     const accessToken = this.jwtService.sign(payload);

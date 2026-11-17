@@ -260,6 +260,50 @@ describe("RBAC & Branch Scoping Test Suite", () => {
         ),
       ).rejects.toThrow(ForbiddenException);
     });
+
+    it("should allow non-owner managers to invite staff when target permissions are within their ceiling", async () => {
+      // Manager with permissions matching/exceeding target role
+      const fullManager: AuthenticatedUser = {
+        ...branchManagerUser,
+        permissions: ["manage_staff", "view_products", "organize_products"],
+      };
+
+      const created = await staffService.create(
+        orgId,
+        {
+          name: "Authorized Clerk",
+          email: "authorized_clerk@demo.com",
+          password: "demo123password",
+          branchId: dhanmondiBranchId,
+          roleId: stockClerkRoleId,
+        },
+        fullManager,
+      );
+
+      expect(created.email).toBe("authorized_clerk@demo.com");
+      expect(created.branchId).toBe(dhanmondiBranchId);
+    });
+
+    it("should resolve actor permissions from database role when token permissions array is empty", async () => {
+      const managerWithoutTokenPerms: AuthenticatedUser = {
+        ...branchManagerUser,
+        permissions: [],
+      };
+
+      const created = await staffService.create(
+        orgId,
+        {
+          name: "Fallback Role Clerk",
+          email: "fallback_clerk@demo.com",
+          password: "demo123password",
+          branchId: dhanmondiBranchId,
+          roleId: stockClerkRoleId,
+        },
+        managerWithoutTokenPerms,
+      );
+
+      expect(created.email).toBe("fallback_clerk@demo.com");
+    });
   });
 
   describe("Branch Deletion Invariants", () => {

@@ -124,7 +124,8 @@ describe("ProductsService Branch Scoping & Inventory Test Suite", () => {
       branchId: dhanmondiId,
     });
 
-    expect(Number(decimalProduct.price)).toBe(499.55);
+    expect(typeof decimalProduct.price).toBe("number");
+    expect(decimalProduct.price).toBe(499.55);
     await productsService.delete(orgId, decimalProduct.id);
   });
 

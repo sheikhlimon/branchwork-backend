@@ -228,5 +228,25 @@ describe("AuthService TDD Suite", () => {
         }),
       ).rejects.toThrow(UnauthorizedException);
     });
+
+    it("should handle concurrent refresh attempts safely with reuse protection", async () => {
+      const loginRes = await authService.login({
+        email: "nadia.test@demo.com",
+        password: "demo123password",
+      });
+
+      // Fire two concurrent refresh requests simultaneously with the same token
+      const [res1, res2] = await Promise.allSettled([
+        authService.refresh({ refreshToken: loginRes.refreshToken }),
+        authService.refresh({ refreshToken: loginRes.refreshToken }),
+      ]);
+
+      // Exactly one should succeed; the other must be rejected with UnauthorizedException
+      const successes = [res1, res2].filter((r) => r.status === "fulfilled");
+      const failures = [res1, res2].filter((r) => r.status === "rejected");
+
+      expect(successes.length).toBe(1);
+      expect(failures.length).toBe(1);
+    });
   });
 });

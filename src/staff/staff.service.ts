@@ -67,7 +67,7 @@ export class StaffService {
     if (actor && !actor.isOwner) {
       const targetPermissions: string[] = JSON.parse(role.permissions || "[]");
       let actorPermissions = actor.permissions;
-      if (!actorPermissions && actor.roleId) {
+      if ((!actorPermissions || actorPermissions.length === 0) && actor.roleId) {
         const actorRole = await this.prisma.role.findUnique({
           where: { id: actor.roleId },
         });

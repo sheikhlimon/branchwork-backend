@@ -15,6 +15,16 @@ export class ProductsService {
   constructor(private readonly prisma: PrismaService) {}
 
   /**
+   * Helper to serialize Prisma Decimal to clean numbers for API consumers.
+   */
+  private formatProduct<T extends { price: unknown }>(product: T) {
+    return {
+      ...product,
+      price: Number(product.price),
+    };
+  }
+
+  /**
    * Creates a new product SKU in a specific branch (Owner only).
    */
   async create(organizationId: string, dto: CreateProductDto) {
@@ -39,7 +49,7 @@ export class ProductsService {
       throw new ConflictException(`Product with SKU '${dto.sku}' already exists`);
     }
 
-    return this.prisma.product.create({
+    const created = await this.prisma.product.create({
       data: {
         organizationId,
         branchId: branch.id,
@@ -55,6 +65,8 @@ export class ProductsService {
         },
       },
     });
+
+    return this.formatProduct(created);
   }
 
   /**
@@ -76,7 +88,7 @@ export class ProductsService {
     const skip = page && limit ? (page - 1) * limit : undefined;
     const take = limit;
 
-    return this.prisma.product.findMany({
+    const products = await this.prisma.product.findMany({
       where: {
         organizationId: user.organizationId,
         ...(resolvedBranchId ? { branchId: resolvedBranchId } : {}),
@@ -99,6 +111,8 @@ export class ProductsService {
       },
       orderBy: { createdAt: "desc" },
     });
+
+    return products.map((p) => this.formatProduct(p));
   }
 
   /**
@@ -113,9 +127,11 @@ export class ProductsService {
       throw new NotFoundException("Product not found");
     }
 
-    return this.prisma.product.delete({
+    const deleted = await this.prisma.product.delete({
       where: { id: product.id },
     });
+
+    return this.formatProduct(deleted);
   }
 
   /**
@@ -149,7 +165,7 @@ export class ProductsService {
       }
     }
 
-    return this.prisma.product.update({
+    const updated = await this.prisma.product.update({
       where: { id: product.id },
       data: {
         ...(dto.category ? { category: dto.category.trim() } : {}),
@@ -162,5 +178,7 @@ export class ProductsService {
         },
       },
     });
+
+    return this.formatProduct(updated);
   }
 }
