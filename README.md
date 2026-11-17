@@ -32,6 +32,11 @@ Once started:
 * **Swagger UI:** `http://localhost:3000/api/docs`
 * **API Base:** `http://localhost:3000/api`
 
+To stop the container stack:
+```bash
+docker compose down
+```
+
 ### Option B: Local Development
 
 #### Prerequisites
